@@ -171,7 +171,14 @@ $('xlsxBtn').addEventListener('click', () => {
   $('loading').hidden = true;
   if (!ok) { $('denied').hidden = false; return; }
   // El rol está en Clerk; comprobamos que también llegue a Supabase dentro del token.
-  const { data: okDb } = await supabase.rpc('navidad_is_admin');
+  const { data: okDb, error: errDb } = await supabase.rpc('navidad_is_admin');
+  if (errDb) {
+    // Supabase no aceptó el token: normalmente el dominio de Clerk no está registrado en Third-party Auth.
+    $('denied').hidden = false;
+    $('denied').textContent = 'Supabase rechazó tu sesión de Clerk (' + mensajeError(errDb) + '). '
+      + 'Revisa que el dominio de esta instancia de Clerk esté registrado en Supabase: Authentication → Sign In / Providers → Third-party Auth.';
+    return;
+  }
   if (okDb !== true) {
     $('denied').hidden = false;
     $('denied').textContent = 'Tu usuario tiene el rol admin en Clerk, pero el token de sesión no lo incluye. '

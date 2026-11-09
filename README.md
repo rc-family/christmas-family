@@ -105,13 +105,28 @@ Configuración necesaria, una sola vez:
   gh secret set PUBLIC_SUPABASE_URL -R rc-family/christmas-family --body "https://khrmsbteunrzpdsrrhjy.supabase.co"
   gh secret set PUBLIC_SUPABASE_ANON_KEY -R rc-family/christmas-family --body "sb_publishable_..."
   gh secret set PUBLIC_CLERK_PUBLISHABLE_KEY -R rc-family/christmas-family --body "pk_test_..."
+  gh secret set PUBLIC_SENTRY_DSN -R rc-family/christmas-family --body "https://...@o....ingest.us.sentry.io/..."
+  gh secret set SENTRY_AUTH_TOKEN -R rc-family/christmas-family --body "sntrys_..."
   ```
+
+  `SENTRY_AUTH_TOKEN` es un token de organización de Sentry (Settings → Auth Tokens, alcance `project:releases`
+  y `org:read`) que el build usa solo para subir los mapas de código; nunca llega al navegador.
 
 - Para pasar Clerk a producción: crea la instancia Production con el dominio, repite el token personalizado
   (`metadata`) y la integración con Supabase, registra el nuevo dominio de Clerk en Supabase Third-party Auth y
   actualiza el secreto `PUBLIC_CLERK_PUBLISHABLE_KEY` con la clave `pk_live_...`.
 
 Para compilar a mano: `npm run build` genera `dist/` estático; `SITE_URL` y `BASE_PATH` son opcionales.
+
+## Monitoreo con Sentry
+
+- Proyecto `christmas-family` en la organización `mobitec-ca` (plataforma Astro / navegador).
+- `sentry.client.config.ts` inicializa el SDK con errores, trazas de rendimiento y grabación de sesión
+  (textos enmascarados). Toma el DSN de `PUBLIC_SENTRY_DSN`; sin DSN no envía nada.
+- `astro.config.mjs` registra la integración solo para el cliente (el sitio es estático) y, cuando existe
+  `SENTRY_AUTH_TOKEN`, sube los mapas de código al build y los borra del `dist/` publicado.
+- El pipeline etiqueta cada despliegue con `release = SHA del commit` (`PUBLIC_SENTRY_RELEASE`) y
+  `environment = production`; en `npm run dev` el entorno es `development`.
 
 ## Estructura
 

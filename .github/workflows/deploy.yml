@@ -18,6 +18,10 @@ env:
   PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
   PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.PUBLIC_SUPABASE_ANON_KEY }}
   PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.PUBLIC_CLERK_PUBLISHABLE_KEY }}
+  # Sentry: DSN público para el SDK, token solo para subir mapas de código en el build
+  PUBLIC_SENTRY_DSN: ${{ secrets.PUBLIC_SENTRY_DSN }}
+  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+  PUBLIC_SENTRY_RELEASE: ${{ github.sha }}
 
 jobs:
   # CI: tipos y compilación en cada push y pull request

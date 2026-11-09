@@ -13,6 +13,7 @@
     "@clerk/clerk-js": "^6.42.3",
     "@clerk/localizations": "^4.24.6",
     "@clerk/ui": "^1.42.4",
+    "@sentry/astro": "^11.11.0",
     "@supabase/supabase-js": "^2.119.0",
     "astro": "^7.4.7",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
