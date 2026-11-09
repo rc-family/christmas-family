@@ -14,22 +14,27 @@ interface Estado {
   sonando: boolean;
 }
 
-const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T | null;
+/** Obtiene un elemento por id o lanza si falta (el marcado vive en Base.astro). */
+function req<T extends HTMLElement>(id: string): T {
+  const el = document.getElementById(id);
+  if (!el) throw new Error(`Falta #${id}`);
+  return el as T;
+}
 
-const audio = $<HTMLAudioElement>('musicaAudio');
-const btn = $<HTMLButtonElement>('musicaBtn');
-const panel = $<HTMLDivElement>('musicaPanel');
-const play = $<HTMLButtonElement>('mPlay');
-const prev = $<HTMLButtonElement>('mPrev');
-const next = $<HTMLButtonElement>('mNext');
-const mute = $<HTMLButtonElement>('mMute');
-const vol = $<HTMLInputElement>('mVol');
-const titulo = $<HTMLElement>('mTitulo');
-const interprete = $<HTMLElement>('mInterprete');
-const lista = $<HTMLOListElement>('mLista');
-const aviso = $<HTMLElement>('mAviso');
+function iniciar() {
+  const audio = req<HTMLAudioElement>('musicaAudio');
+  const btn = req<HTMLButtonElement>('musicaBtn');
+  const panel = req<HTMLDivElement>('musicaPanel');
+  const play = req<HTMLButtonElement>('mPlay');
+  const prev = req<HTMLButtonElement>('mPrev');
+  const next = req<HTMLButtonElement>('mNext');
+  const mute = req<HTMLButtonElement>('mMute');
+  const vol = req<HTMLInputElement>('mVol');
+  const titulo = req<HTMLElement>('mTitulo');
+  const interprete = req<HTMLElement>('mInterprete');
+  const lista = req<HTMLOListElement>('mLista');
+  const aviso = req<HTMLElement>('mAviso');
 
-if (audio && btn && panel && play && prev && next && mute && vol && titulo && interprete && lista && aviso) {
   const estado: Estado = leer();
   let pendiente = false; // quería sonar pero el navegador bloqueó el autoplay
 
@@ -131,7 +136,7 @@ if (audio && btn && panel && play && prev && next && mute && vol && titulo && in
   }
 
   // Controles
-  btn.addEventListener('click', () => abrir(panel.hidden));
+  btn.addEventListener('click', () => abrir(panel.hidden === true));
   play.addEventListener('click', () => (audio.paused ? void reproducir() : pausar()));
   prev.addEventListener('click', () => cargar(estado.i - 1, estado.sonando || !audio.paused));
   next.addEventListener('click', () => cargar(estado.i + 1, estado.sonando || !audio.paused));
@@ -176,4 +181,10 @@ if (audio && btn && panel && play && prev && next && mute && vol && titulo && in
 
   pintarLista();
   cargar(estado.i, estado.sonando);
+}
+
+try {
+  iniciar();
+} catch (e) {
+  console.warn('Reproductor de música no disponible:', e);
 }
