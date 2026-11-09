@@ -1,11 +1,12 @@
 ---
 import Base from '../layouts/Base.astro';
+import { ruta } from '../lib/rutas';
 ---
 <Base title="Respuestas · Compartir navideño" wide>
   <div class="userbar">
     <span>Sesión: <strong id="userEmail">...</strong></span>
     <span class="links">
-      <a href="/registro">Mi registro</a>
+      <a href={ruta('/registro')}>Mi registro</a>
       <button type="button" class="btn link" id="logoutBtn">Salir</button>
     </span>
   </div>

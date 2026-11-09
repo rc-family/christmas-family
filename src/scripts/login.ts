@@ -1,9 +1,10 @@
+import { ruta } from '../lib/rutas';
 import { loadClerk, aparienciaClerk } from '../lib/clerk';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
 const next = new URLSearchParams(location.search).get('next');
-const destino = next && next.startsWith('/') && !next.startsWith('//') ? next : '/registro';
+const destino = next && next.startsWith('/') && !next.startsWith('//') ? next : ruta('/registro');
 
 (async () => {
   const clerk = await loadClerk();

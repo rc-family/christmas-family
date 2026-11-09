@@ -2,12 +2,13 @@
 import Base from '../layouts/Base.astro';
 import { FECHA_COMPARTIR_ISO } from '../lib/edad';
 import DatosCompartir from '../components/DatosCompartir.astro';
+import { ruta } from '../lib/rutas';
 ---
 <Base title="Registro · Compartir navideño">
   <div class="userbar">
     <span>Sesión: <strong id="userEmail">...</strong></span>
     <span class="links">
-      <a href="/admin" id="adminLink" hidden>Ver respuestas</a>
+      <a href={ruta('/admin')} id="adminLink" hidden>Ver respuestas</a>
       <button type="button" class="btn link" id="logoutBtn">Salir</button>
     </span>
   </div>

@@ -86,11 +86,32 @@ cuando el token de Clerk trae `metadata.role = 'admin'` (ver *Organizadores* arr
 
 En desarrollo la instancia de Clerk queda expuesta como `window.__clerk` para inspeccionar el token desde la consola.
 
-## Despliegue
+## Despliegue (CI/CD con GitHub Actions)
 
-`npm run build` genera `dist/` estático. Sirve en Netlify, Vercel, Cloudflare Pages o GitHub Pages.
-Para producción crea la instancia *Production* en Clerk (requiere un dominio propio), usa su `pk_live_...` y
-registra el nuevo dominio de Clerk en Supabase → Third-party Auth.
+El workflow `.github/workflows/deploy.yml` corre en cada push y pull request a `main`:
+
+1. **Verificar**: `npm ci`, `npx astro check` y `npm run build`.
+2. **Desplegar** (solo en push a `main`): compila con la URL y la ruta base que entrega `actions/configure-pages`
+   y publica `dist/` en GitHub Pages. El sitio queda en el dominio configurado en Settings → Pages
+   (`navidad.familiacrispin.com`); sin dominio propio funcionaría igual en `rc-family.github.io/christmas-family`,
+   porque todas las rutas internas pasan por `ruta()` (`src/lib/rutas.ts`).
+
+Configuración necesaria, una sola vez:
+
+- **Settings → Pages → Source: GitHub Actions** (ya está así).
+- **Secretos del repositorio** (Settings → Secrets and variables → Actions), con los mismos valores del `.env`:
+
+  ```bash
+  gh secret set PUBLIC_SUPABASE_URL -R rc-family/christmas-family --body "https://khrmsbteunrzpdsrrhjy.supabase.co"
+  gh secret set PUBLIC_SUPABASE_ANON_KEY -R rc-family/christmas-family --body "sb_publishable_..."
+  gh secret set PUBLIC_CLERK_PUBLISHABLE_KEY -R rc-family/christmas-family --body "pk_test_..."
+  ```
+
+- Para pasar Clerk a producción: crea la instancia Production con el dominio, repite el token personalizado
+  (`metadata`) y la integración con Supabase, registra el nuevo dominio de Clerk en Supabase Third-party Auth y
+  actualiza el secreto `PUBLIC_CLERK_PUBLISHABLE_KEY` con la clave `pk_live_...`.
+
+Para compilar a mano: `npm run build` genera `dist/` estático; `SITE_URL` y `BASE_PATH` son opcionales.
 
 ## Estructura
 

@@ -1,6 +1,7 @@
 import { Clerk } from '@clerk/clerk-js';
 import { ui } from '@clerk/ui';
 import { esES } from '@clerk/localizations';
+import { ruta } from './rutas';
 
 const key = import.meta.env.PUBLIC_CLERK_PUBLISHABLE_KEY;
 
@@ -14,7 +15,7 @@ export function loadClerk(): Promise<Clerk | null> {
   if (!clerk) return Promise.resolve(null);
   // clerk-js v6 no incluye la interfaz: se pasa el paquete @clerk/ui empaquetado con la app.
   loading ??= clerk
-    .load({ ui, localization: esES, signInUrl: '/', signUpUrl: '/', afterSignOutUrl: '/' })
+    .load({ ui, localization: esES, signInUrl: ruta('/'), signUpUrl: ruta('/'), afterSignOutUrl: ruta('/') })
     .then(() => clerk);
   return loading;
 }

@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './database.types';
 import { tokenSupabase, usuarioActual, loadClerk, esAdmin, type Usuario } from './clerk';
+import { ruta } from './rutas';
 
 const url = import.meta.env.PUBLIC_SUPABASE_URL;
 const key = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
@@ -23,7 +24,7 @@ export async function requireUser(): Promise<Usuario | null> {
   const user = await usuarioActual();
   if (!user) {
     const next = encodeURIComponent(location.pathname + location.search);
-    location.replace(`/?next=${next}`);
+    location.replace(`${ruta('/')}?next=${next}`);
     return null;
   }
   return user;
@@ -38,5 +39,5 @@ export const isAdmin = esAdmin;
 export async function signOut() {
   const c = await loadClerk();
   if (c) await c.signOut();
-  location.replace('/');
+  location.replace(ruta('/'));
 }
