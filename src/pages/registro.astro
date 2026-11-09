@@ -1,8 +1,9 @@
 ---
 import Base from '../layouts/Base.astro';
-import { FECHA_COMPARTIR_ISO } from '../lib/edad';
+import { FECHA_COMPARTIR_ISO, DATOS_COMPARTIR, CONTACTO } from '../lib/edad';
 import DatosCompartir from '../components/DatosCompartir.astro';
 import { ruta } from '../lib/rutas';
+import Contacto from '../components/Contacto.astro';
 ---
 <Base title="Registro · Compartir navideño">
   <div class="userbar">
@@ -20,10 +21,18 @@ import { ruta } from '../lib/rutas';
 
   <div class="loading" id="loading">Cargando tu registro...</div>
 
+  <div id="cerrado" hidden>
+    <section class="gracias">
+      <div class="check no" aria-hidden="true">–</div>
+      <h2>El registro ya cerró</h2>
+      <p class="lead">Recibimos respuestas hasta el {DATOS_COMPARTIR.limite.toLowerCase()}. Si aún quieres sumarte o avisar algo, escríbele a {CONTACTO.nombre} por WhatsApp y lo vemos contigo.</p>
+    </section>
+  </div>
+
   <form id="form" novalidate hidden>
     <section>
-      <h2><span class="n">01</span> Papá o mamá</h2>
-      <p class="hint">Quién responde y cómo ubicarte.</p>
+      <h2><span class="n">01</span> Persona responsable del registro</h2>
+      <p class="hint">Puede ser papá, mamá, abuelo, tío o quien venga a cargo. <strong>Una sola respuesta por familia</strong>: quien la envíe registra a todos los adultos y niños que vienen juntos.</p>
       <div class="grid">
         <label class="f full">Nombre completo <span class="req">*</span>
           <input id="p_nombre" name="p_nombre" required autocomplete="name" placeholder="Ej. Eladio Requena" />
@@ -78,6 +87,9 @@ import { ruta } from '../lib/rutas';
       </div>
     </section>
 
+    <p class="resumen-envio" id="resumenEnvio" aria-live="polite"></p>
+    <p class="privacidad">Solo los organizadores ven estos datos. Los usamos para preparar la comida, los juegos y los regalos de los niños, y los borraremos después del compartir, antes de fin de año.</p>
+
     <div class="actions">
       <button type="submit" class="btn" id="submit">Enviar respuesta</button>
       <button type="button" class="btn link" id="backBtn" hidden>Volver sin guardar cambios</button>
@@ -87,7 +99,7 @@ import { ruta } from '../lib/rutas';
 
   <div id="confirm" hidden>
     <section class="gracias">
-      <div class="check" aria-hidden="true">✓</div>
+      <div class="check" id="cIcono" aria-hidden="true">✓</div>
       <h2 id="cTitulo">¡Gracias por registrarte!</h2>
       <p class="lead" id="cLead">Tu respuesta quedó guardada.</p>
     </section>
@@ -99,8 +111,9 @@ import { ruta } from '../lib/rutas';
 
     <section>
       <h2>¿Algo cambió?</h2>
-      <p class="hint">Puedes actualizar tu respuesta cuantas veces quieras antes del compartir.</p>
-      <div class="opciones">
+      <p class="hint" id="cHintAbierto">Puedes actualizar tu respuesta cuantas veces quieras hasta el {DATOS_COMPARTIR.limite.toLowerCase()}. Después de esa fecha, avísale a {CONTACTO.nombre} por WhatsApp.</p>
+      <p class="aviso" id="cHintCerrado" hidden>El registro cerró el {DATOS_COMPARTIR.limite.toLowerCase()}. Tu respuesta quedó guardada tal como la ves arriba; si necesitas cambiar algo, escríbele a {CONTACTO.nombre} por WhatsApp.</p>
+      <div class="opciones" id="cOpciones">
         <button type="button" class="btn ghost" id="btnAddKid">+ Agregar un niño</button>
         <button type="button" class="btn ghost" id="btnAddAdult">+ Agregar acompañante</button>
         <button type="button" class="btn ghost" id="btnEdit">Editar mi respuesta</button>
@@ -118,6 +131,8 @@ import { ruta } from '../lib/rutas';
     </section>
 
   </div>
+
+  <Contacto />
 
   <template id="adultTpl">
     <div class="kid">

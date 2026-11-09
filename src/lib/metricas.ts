@@ -33,7 +33,7 @@ export async function emitirTotales(origen: 'registro' | 'admin'): Promise<Total
     const attrs = { origen };
     // Adultos: total y por tipo
     Sentry.metrics.gauge('registro.adultos', t.padres + t.acompanantes, { attributes: { ...attrs, tipo: 'total' } });
-    Sentry.metrics.gauge('registro.adultos', t.padres, { attributes: { ...attrs, tipo: 'padre_madre' } });
+    Sentry.metrics.gauge('registro.adultos', t.padres, { attributes: { ...attrs, tipo: 'responsable' } });
     Sentry.metrics.gauge('registro.adultos', t.acompanantes, { attributes: { ...attrs, tipo: 'acompanante' } });
     // Niños: total y por sexo
     Sentry.metrics.gauge('registro.ninos', t.ninos_varones + t.ninos_mujeres, { attributes: { ...attrs, sexo: 'total' } });

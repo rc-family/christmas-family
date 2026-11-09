@@ -1,0 +1,7 @@
+---
+import { CONTACTO } from '../lib/edad';
+const wa = CONTACTO.celular ? `https://wa.me/${CONTACTO.celular}?text=${encodeURIComponent('Hola, tengo un problema con el registro del compartir navideño.')}` : '';
+---
+<p class="contacto">
+  ¿Problemas con el código o el registro? Escríbele a{' '}{wa ? <a href={wa} target="_blank" rel="noopener">{CONTACTO.nombre} por WhatsApp</a> : <strong>{CONTACTO.nombre} por WhatsApp</strong>}.
+</p>

@@ -46,7 +46,7 @@ function render(fams: Familia[]) {
   const cont = $('familias'), rowsN = $('rowsNinos');
   cont.innerHTML = ''; rowsN.innerHTML = '';
   hojas.ninos = [['Niño', 'Fecha de nacimiento', 'Edad al 5/12', 'Sexo', 'Intereses', 'Alergias', 'Familia', 'Parentesco', 'Celular', 'Asiste']];
-  hojas.familias = [['Padre/madre', 'Parentesco', 'Celular', 'Correo', 'Asiste', 'Adultos', 'Niños', 'Ayuda', 'Comentarios', 'Enviado']];
+  hojas.familias = [['Responsable', 'Parentesco', 'Celular', 'Correo', 'Asiste', 'Adultos', 'Niños', 'Ayuda', 'Comentarios', 'Enviado']];
   hojas.acompanantes = [['Acompañante', 'Relación', 'Celular', 'Restricciones', 'Familia', 'Asiste']];
 
   // Contadores (solo familias que no dijeron "No")
@@ -74,13 +74,16 @@ function render(fams: Familia[]) {
     }
     kids.forEach((n) => ninosPlano.push({ n, f }));
 
-    // Tarjeta de la familia: padre/madre + acompañantes + hijos
-    cont.appendChild(tarjetaFamilia({
+    // Tarjeta de la familia: responsable + acompañantes + hijos (con datos para filtrar)
+    const card = tarjetaFamilia({
       nombre: f.nombre, parentesco: f.parentesco, celular: f.celular, email: f.email, asiste: f.asiste,
       ayuda: f.ayuda, comentarios: f.comentarios, enviado: fecha(f.updated_at),
       acompanantes: acomp,
       ninos: kids.map((n) => ({ nombre: n.nombre, fecha: n.fecha_nacimiento, sexo: n.sexo, intereses: n.intereses, alergias: n.alergias })),
-    }));
+    });
+    card.dataset.asiste = f.asiste;
+    card.dataset.busca = [f.nombre, f.parentesco, f.celular, f.email, ...acomp.map((a) => a.nombre), ...kids.map((n) => n.nombre)].join(' ').toLowerCase();
+    cont.appendChild(card);
     for (const a of acomp) hojas.acompanantes.push([a.nombre, a.relacion, a.celular ?? '', a.restricciones ?? '', f.nombre, f.asiste]);
     for (const n of kids) hojas.ninos.push([n.nombre, n.fecha_nacimiento, edadAlCompartir(n.fecha_nacimiento), n.sexo, n.intereses ?? '', n.alergias ?? '', f.nombre, f.parentesco, f.celular, f.asiste]);
 
@@ -103,7 +106,7 @@ function render(fams: Familia[]) {
   const adultos = padres + acompanantes;
   $('stAdultos').textContent = String(adultos);
   llenarDl($('dlAdultos'), [
-    ['Padres o madres', padres],
+    ['Responsables del registro', padres],
     ['Acompañantes', acompanantes],
     ['Con restricción alimentaria', conRestricciones, true],
   ]);
@@ -124,7 +127,7 @@ function render(fams: Familia[]) {
   hojas.resumen = [
     ['Indicador', 'Cantidad'],
     ['Familias', fams.length], ['Familias: sí, vamos', asiste['Sí'] || 0], ['Familias: por confirmar', asiste['Por confirmar'] || 0], ['Familias: no podrán', asiste['No'] || 0],
-    ['Adultos', adultos], ['Adultos: padres o madres', padres], ['Adultos: acompañantes', acompanantes], ['Adultos con restricción alimentaria', conRestricciones],
+    ['Adultos', adultos], ['Adultos: responsables', padres], ['Adultos: acompañantes', acompanantes], ['Adultos con restricción alimentaria', conRestricciones],
     ['Niños (total)', ninos], ['Niños', varones], ['Niñas', mujeres],
     ...ORDEN_RANGOS.map((r): Fila => ['Niños de ' + r + ' años', rangos[r] || 0]),
     ['Niños con alergias', conAlergias],
@@ -135,7 +138,30 @@ function render(fams: Familia[]) {
     cont.appendChild(el('p', 'hint', 'Aún no hay respuestas.'));
     rowsN.appendChild(tr([td('Aún no hay niños registrados.')]));
   }
+  aplicarFiltro();
 }
+
+/* ---------- Filtros de familias (asistencia + búsqueda) ---------- */
+function normalizar(t: string) { return t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+function aplicarFiltro() {
+  const asiste = (document.querySelector<HTMLInputElement>('input[name="fAsiste"]:checked')?.value) ?? '';
+  const texto = normalizar($<HTMLInputElement>('filtroTexto').value.trim());
+  const cards = document.querySelectorAll<HTMLElement>('#familias .fam');
+  let visibles = 0;
+  cards.forEach((c) => {
+    const ok = (!asiste || c.dataset.asiste === asiste) && (!texto || normalizar(c.dataset.busca ?? '').includes(texto));
+    c.hidden = !ok;
+    if (ok) visibles++;
+  });
+  const fam = (n: number) => `${n} ${n === 1 ? 'familia' : 'familias'}`;
+  $('filtroCuenta').textContent = cards.length ? (visibles === cards.length ? fam(cards.length) : `${visibles} de ${fam(cards.length)}`) : '';
+  const sinResultados = $('familias').querySelector<HTMLElement>('.sin-resultados');
+  if (cards.length && !visibles) {
+    if (!sinResultados) $('familias').appendChild(el('p', 'hint sin-resultados', 'Ninguna familia coincide con el filtro.'));
+  } else sinResultados?.remove();
+}
+$('filtroAsiste').addEventListener('change', aplicarFiltro);
+$('filtroTexto').addEventListener('input', aplicarFiltro);
 
 /* ---------- Uso del sitio ---------- */
 

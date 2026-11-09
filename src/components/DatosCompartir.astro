@@ -2,7 +2,7 @@
 import { DATOS_COMPARTIR } from '../lib/edad';
 ---
 <dl class="datos">
-  <div><dt>Fecha</dt><dd>{DATOS_COMPARTIR.fecha}</dd></div>
-  <div><dt>Hora</dt><dd>{DATOS_COMPARTIR.hora}</dd></div>
-  <div><dt>Lugar</dt><dd>{DATOS_COMPARTIR.lugar}</dd></div>
+  <div><dt>Cuándo</dt><dd>{DATOS_COMPARTIR.fecha}<small>{DATOS_COMPARTIR.hora}</small></dd></div>
+  <div><dt>Dónde</dt><dd>{DATOS_COMPARTIR.lugar}<small>{DATOS_COMPARTIR.lugarNota}</small></dd></div>
+  <div class="plazo"><dt>Plazo</dt><dd>{DATOS_COMPARTIR.limite}<small>Último día para responder o cambiar tu respuesta</small></dd></div>
 </dl>

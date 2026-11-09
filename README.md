@@ -118,9 +118,53 @@ Configuración necesaria, una sola vez:
 
 Para compilar a mano: `npm run build` genera `dist/` estático; `SITE_URL` y `BASE_PATH` son opcionales.
 
+## Migraciones
+
+Los archivos de `supabase/migrations/` llevan como prefijo la versión exacta con la que quedaron registrados
+en la base (`YYYYMMDDHHMMSS`, visible en Supabase → Database → Migrations), así el orden de aplicación es el
+mismo en cualquier entorno y `supabase db push` no intenta reaplicarlas. Los primeros cambios (tablas,
+realtime) se hicieron desde el panel y están incluidos en `20261109033636_navidad_auth_clerk.sql`.
+
+## Plazo de respuesta
+
+El bloque de datos y la pantalla de confirmación indican la misma fecha límite (`DATOS_COMPARTIR.limite` en
+`src/lib/edad.ts`, hoy el domingo 22 de noviembre): vale tanto para la respuesta inicial como para los
+cambios. **El registro se cierra automáticamente** ese día a las 23:59:59 hora de Lima:
+
+- La base rechaza cualquier guardado desde `navidad_guardar_respuesta()` (función `navidad_cierre_registro()`,
+  migración `20261109184037_navidad_cierre_registro.sql`) y las políticas RLS de escritura de familias,
+  acompañantes y niños exigen `navidad_registro_abierto()` (migración `20261109184752_navidad_cierre_rls.sql`), así que tampoco
+  se puede escribir llamando a la API directamente. Esta es la barrera real.
+- La página oculta el formulario y los botones de cambio, muestra lo registrado y pide avisar a la organizadora
+  de contacto (`CONTACTO`) para cambios tardíos (`CIERRE_REGISTRO` en `src/lib/edad.ts`).
+
+Para mover la fecha hay que cambiar ambos lugares: la función SQL (nueva migración) y la constante en
+`edad.ts`, además del texto `DATOS_COMPARTIR.limite`. El panel de organización sigue funcionando después del
+cierre.
+
+## Borrado de datos después del compartir
+
+El formulario promete borrar los datos después del evento, antes de fin de año. Procedimiento (manual, una
+sola vez, entre el 6 y el 31 de diciembre de 2026):
+
+1. Exportar el Excel desde `/admin` si los organizadores quieren conservar un resumen sin la base.
+2. En Supabase (SQL Editor del proyecto `christmas-family`) ejecutar, en este orden:
+
+   ```sql
+   delete from public.navidad_ninos;
+   delete from public.navidad_acompanantes;
+   delete from public.navidad_familias;
+   delete from public.navidad_eventos;
+   ```
+
+3. En Clerk, borrar los usuarios de la instancia Production (Users → seleccionar todos → Delete) o
+   desactivar la aplicación; los correos de las familias viven ahí.
+4. Sentry no guarda datos personales (los textos de las grabaciones están enmascarados) y purga todo
+   por retención a los 90 días; no requiere acción.
+
 ## Medición de uso
 
-- Tabla `navidad_eventos` (migración `20261110_navidad_eventos.sql`): un evento por acción, sin datos
+- Tabla `navidad_eventos` (migración `20261109171506_navidad_eventos.sql`): un evento por acción, sin datos
   personales. Visitantes anónimos y usuarios pueden insertar (la base valida el nombre del evento y el
   tamaño); solo los organizadores pueden leer; nadie puede editar ni borrar.
 - `src/lib/eventos.ts` expone `registrar(evento, detalle)`; se llama desde login, registro, música y admin.
@@ -136,12 +180,12 @@ Para compilar a mano: `npm run build` genera `dist/` estático; `SITE_URL` y `BA
 ### Métricas (Application Metrics)
 
 - El guardado del registro usa la función `navidad_guardar_respuesta()` (migración
-  `20261110_navidad_guardar_respuesta.sql`), que escribe familia, acompañantes y niños en una sola transacción;
+  `20261109175235_navidad_guardar_respuesta.sql`), que escribe familia, acompañantes y niños en una sola transacción;
   así los totales nunca se leen a medias.
 - `src/lib/metricas.ts` envía gauges con el estado actual del registro tras cada guardado y al abrir el
-  panel: `registro.adultos` (atributo `tipo`: total, padre_madre, acompanante), `registro.ninos` (atributo
+  panel: `registro.adultos` (atributo `tipo`: total, responsable, acompanante), `registro.ninos` (atributo
   `sexo`: total, nino, nina) y `registro.familias` (atributo `asiste`). Los totales salen de la función
-  `navidad_totales()` (migración `20261110_navidad_totales.sql`), que devuelve solo conteos.
+  `navidad_totales()` (migración `20261109174122_navidad_totales.sql`), que devuelve solo conteos.
 - Counters por acción: `registro.guardado` (atributos `nuevo`, `asiste`), `registro.guardado.adultos` y
   `registro.guardado.ninos` (atributo `sexo`).
 - Se ven en Sentry → Explore → Metrics, filtrando por `sentry.environment:production`.

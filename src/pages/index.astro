@@ -1,11 +1,13 @@
 ---
 import Base from '../layouts/Base.astro';
 import DatosCompartir from '../components/DatosCompartir.astro';
+import Contacto from '../components/Contacto.astro';
 ---
 <Base title="Ingresar · Compartir navideño">
   <header class="top compact centrado">
+    <span class="eyebrow">Están cordialmente invitados</span>
     <h1>Compartir navideño de la familia</h1>
-    <p class="lead">Ingresa con tu correo. Te enviaremos un código de 6 dígitos, sin contraseñas.</p>
+    <p class="lead">Como cada año, nos reunimos en familia para una noche de buena comida, risas y recuerdos. Cuéntanos quiénes vienen para preparar todo con cariño.</p>
     <DatosCompartir />
   </header>
 
@@ -15,10 +17,11 @@ import DatosCompartir from '../components/DatosCompartir.astro';
       Falta configurar la autenticación: agrega <code>PUBLIC_CLERK_PUBLISHABLE_KEY</code> al archivo <code>.env</code> y reinicia el servidor.
     </div>
     <section id="signin" hidden>
-      <h2><span class="n">01</span> Tu correo</h2>
-      <p class="hint">Escribe tu correo, recibe el código y pégalo aquí. Si es tu primera vez, la cuenta se crea sola.</p>
+      <h2><span class="n">01</span> Ingresa con tu correo</h2>
+      <p class="hint">Te enviamos un código de 6 dígitos, sin contraseñas. Si es tu primera vez, la cuenta se crea sola.</p>
       <div id="clerkSignIn"></div>
     </section>
+    <Contacto />
   </div>
 
   <script>

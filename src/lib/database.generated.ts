@@ -182,6 +182,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      navidad_cierre_registro: { Args: never; Returns: string }
       navidad_es_mi_familia: { Args: { fid: string }; Returns: boolean }
       navidad_guardar_respuesta: { Args: { p_email: string; p_datos: Json }; Returns: string }
       navidad_is_admin: { Args: never; Returns: boolean }

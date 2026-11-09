@@ -34,7 +34,7 @@ export function tarjetaFamilia(d: TarjetaDatos): HTMLElement {
   colA.appendChild(el('h4', '', `Adultos (${1 + d.acompanantes.length})`));
   const ulA = el('ul');
   const liP = el('li');
-  liP.append(d.nombre, el('span', 'sub', ['Responde', d.parentesco, d.email].filter(Boolean).join(' · ')));
+  liP.append(d.nombre, el('span', 'sub', ['Responsable', d.parentesco, d.email].filter(Boolean).join(' · ')));
   ulA.appendChild(liP);
   for (const a of d.acompanantes) {
     const li = el('li');

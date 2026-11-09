@@ -1,5 +1,5 @@
 import { supabase, requireUser, isAdmin, signOut } from '../lib/supabase';
-import { edadAlCompartir } from '../lib/edad';
+import { edadAlCompartir, registroCerrado } from '../lib/edad';
 import { tarjetaFamilia } from '../lib/tarjeta';
 import { registrar, registrarVisita, usuarioEventos } from '../lib/eventos';
 import { contarGuardado, emitirTotales } from '../lib/metricas';
@@ -122,20 +122,77 @@ function poblar(d: Respuesta) {
   d.ninos.forEach((n) => addKid({ nombre: n.nombre, fecha_nacimiento: n.fecha, sexo: n.sexo, intereses: n.intereses, alergias: n.alergias }));
 }
 
-function validate(d: Respuesta): string {
-  const faltan: string[] = [];
-  if (!d.nombre) faltan.push('nombre');
-  if (!d.parentesco) faltan.push('parentesco');
-  if (!d.celular) faltan.push('celular');
-  if (!d.asiste) faltan.push('asiste');
-  if (d.acompanantes.some((a) => !a.nombre || !a.relacion)) faltan.push('acompanante');
-  if (d.ninos.some((n) => !n.nombre || !n.fecha || !n.sexo)) faltan.push('nino');
-  if (faltan.length) registrar('validacion_fallo', { campos: faltan.join(',') });
-  if (!d.nombre || !d.parentesco || !d.celular || !d.asiste) return 'Completa nombre, parentesco, celular y asistencia.';
-  for (const a of d.acompanantes) if (!a.nombre || !a.relacion) return 'En cada acompañante: nombre y relación.';
-  for (const n of d.ninos) if (!n.nombre || !n.fecha || !n.sexo) return 'En cada niño: nombre, fecha de nacimiento y sexo (o quita el bloque vacío).';
-  return '';
+/* ---------- Validación por campo ---------- */
+
+/** Marca un campo como inválido con su mensaje debajo. Devuelve el elemento a enfocar. */
+function marcar(ctrl: HTMLElement, msg: string): HTMLElement {
+  const f = ctrl.closest<HTMLElement>('.f') ?? ctrl;
+  f.classList.add('invalid');
+  if (!f.querySelector('.error')) { const e = document.createElement('small'); e.className = 'error'; e.textContent = msg; f.appendChild(e); }
+  return ctrl;
 }
+function limpiarErrores() {
+  form.querySelectorAll('.f.invalid').forEach((f) => { f.classList.remove('invalid'); f.querySelector('.error')?.remove(); });
+}
+// Al corregir un campo, quitar su marca de error
+form.addEventListener('input', (e) => { const f = (e.target as HTMLElement).closest<HTMLElement>('.f.invalid'); if (f) { f.classList.remove('invalid'); f.querySelector('.error')?.remove(); } });
+form.addEventListener('change', (e) => { const f = (e.target as HTMLElement).closest<HTMLElement>('.f.invalid'); if (f) { f.classList.remove('invalid'); f.querySelector('.error')?.remove(); } });
+
+/**
+ * Valida el formulario: marca cada campo que falta, enfoca el primero y devuelve un resumen
+ * (vacío si todo está bien). Registra qué campos fallaron para la medición de uso.
+ */
+function validate(d: Respuesta): string {
+  limpiarErrores();
+  const faltan: string[] = [];
+  const pendientes: HTMLElement[] = [];
+  if (!d.nombre) { faltan.push('nombre'); pendientes.push(marcar($('p_nombre'), 'Escribe tu nombre completo.')); }
+  if (!d.parentesco) { faltan.push('parentesco'); pendientes.push(marcar($('p_parentesco'), 'Cuéntanos tu parentesco con la familia.')); }
+  if (!d.celular) { faltan.push('celular'); pendientes.push(marcar($('p_celular'), 'Necesitamos un celular para ubicarte.')); }
+  if (!d.asiste) { faltan.push('asiste'); const chips = document.querySelector<HTMLElement>('input[name="p_asiste"]')!.closest<HTMLElement>('.f')!; marcar(chips, 'Elige si asistirán.'); pendientes.push(chips.querySelector<HTMLElement>('input')!); }
+  [...adults.children].forEach((a, i) => {
+    const d0 = d.acompanantes[i];
+    if (!d0.nombre) { faltan.push('acompanante'); pendientes.push(marcar(q(a, '.a_nombre'), 'Falta el nombre del acompañante.')); }
+    if (!d0.relacion) { faltan.push('acompanante'); pendientes.push(marcar(q(a, '.a_relacion'), 'Elige la relación contigo.')); }
+  });
+  [...kids.children].forEach((k, i) => {
+    const n = d.ninos[i];
+    if (!n.nombre) { faltan.push('nino'); pendientes.push(marcar(q(k, '.k_nombre'), 'Falta el nombre del niño.')); }
+    if (!n.fecha) { faltan.push('nino'); pendientes.push(marcar(q(k, '.k_fecha'), 'Falta la fecha de nacimiento.')); }
+    if (!n.sexo) { faltan.push('nino'); const f = q<HTMLElement>(k, '.sexo').closest<HTMLElement>('.f')!; marcar(f, 'Indica si es niño o niña.'); pendientes.push(f.querySelector<HTMLElement>('input')!); }
+  });
+  if (!pendientes.length) return '';
+  registrar('validacion_fallo', { campos: [...new Set(faltan)].join(',') });
+  const primero = pendientes[0];
+  primero.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  primero.focus({ preventScroll: true });
+  const n = pendientes.length;
+  return n === 1 ? 'Falta un dato: revisa el campo marcado.' : `Faltan ${n} datos: revisa los campos marcados.`;
+}
+
+/* ---------- Resumen en vivo antes de enviar ---------- */
+
+const plural = (n: number, s: string, p: string) => `${n} ${n === 1 ? s : p}`;
+function actualizarResumen() {
+  const d = readForm();
+  const el = $('resumenEnvio');
+  if (d.asiste === 'No') { el.textContent = 'Vas a avisar que no podrán venir. Gracias por decirlo: nos ayuda a organizar.'; return; }
+  const adultos = 1 + d.acompanantes.length;
+  const varones = d.ninos.filter((n) => n.sexo === 'Niño').length, mujeres = d.ninos.filter((n) => n.sexo === 'Niña').length;
+  const total = d.ninos.length;
+  const detalleNinos = !total ? ' y ningún niño'
+    : varones && mujeres ? ` y ${plural(total, 'niño', 'niños')} (${plural(varones, 'niño', 'niños')} y ${plural(mujeres, 'niña', 'niñas')})`
+    : mujeres === total ? ` y ${plural(mujeres, 'niña', 'niñas')}`
+    : varones === total ? ` y ${plural(varones, 'niño', 'niños')}`
+    : ` y ${plural(total, 'niño', 'niños')}`;
+  const quien = d.acompanantes.length ? ` (tú y ${plural(d.acompanantes.length, 'acompañante', 'acompañantes')})` : ' (solo tú)';
+  const estado = d.asiste === 'Por confirmar' ? ', por confirmar' : d.asiste === 'Sí' ? ', confirmados' : '';
+  el.textContent = `Vas a registrar ${plural(adultos, 'adulto', 'adultos')}${quien}${detalleNinos}${estado}.`;
+}
+form.addEventListener('input', actualizarResumen);
+form.addEventListener('change', actualizarResumen);
+new MutationObserver(actualizarResumen).observe(kids, { childList: true });
+new MutationObserver(actualizarResumen).observe(adults, { childList: true });
 
 /* ---------- Vistas ---------- */
 
@@ -145,6 +202,9 @@ function primerNombre(n: string) { return n.trim().split(/\s+/)[0] || ''; }
 function mostrarConfirmacion(d: Respuesta) {
   const nombre = primerNombre(d.nombre);
   const noVa = d.asiste === 'No';
+  const icono = $('cIcono');
+  icono.className = 'check ' + (noVa ? 'no' : d.asiste === 'Sí' ? 'si' : 'pc');
+  icono.textContent = noVa ? '–' : d.asiste === 'Sí' ? '✓' : '?';
   $('cTitulo').textContent = noVa ? `Gracias por avisarnos, ${nombre}` : `¡Gracias por registrarte, ${nombre}!`;
   $('cLead').textContent = noVa
     ? 'Guardamos que no podrán acompañarnos. Si cambian de planes, aquí mismo puedes volver a confirmar.'
@@ -168,6 +228,8 @@ function mostrarFormulario(agregar?: 'nino' | 'adulto') {
   confirm.hidden = true;
   form.hidden = false;
   inicioFormulario = Date.now();
+  limpiarErrores();
+  actualizarResumen();
   registrar(agregar === 'nino' ? 'agrego_nino' : agregar === 'adulto' ? 'agrego_acompanante' : guardada ? 'edito' : 'vio_formulario');
   $('submit').textContent = guardada ? 'Guardar cambios' : 'Enviar respuesta';
   $('backBtn').hidden = !guardada;
@@ -225,6 +287,7 @@ async function cargar(userId: string): Promise<Respuesta | null> {
 
   /** Valida, guarda y pasa a la confirmación. Devuelve false si falló. */
   async function enviar(d: Respuesta, status: HTMLElement, botones: HTMLButtonElement[]) {
+    if (registroCerrado()) { status.className = 'status err'; status.textContent = 'El registro ya cerró. Escríbele a la organizadora para cualquier cambio.'; return false; }
     const err = validate(d);
     status.className = 'status';
     if (err) { status.textContent = err; status.classList.add('err'); return false; }
@@ -260,6 +323,13 @@ async function cargar(userId: string): Promise<Respuesta | null> {
     statusEl.className = 'status err';
   }
   $('loading').hidden = true;
+  if (registroCerrado()) {
+    // Cerrado: quien registró ve su respuesta sin botones de cambio; quien no, el aviso de cierre.
+    $('cHintAbierto').hidden = true; $('cHintCerrado').hidden = false; $('cOpciones').hidden = true;
+    if (guardada) { poblar(guardada); mostrarConfirmacion(guardada); }
+    else $('cerrado').hidden = false;
+    return;
+  }
   if (guardada) { poblar(guardada); mostrarConfirmacion(guardada); }
   else mostrarFormulario();
 

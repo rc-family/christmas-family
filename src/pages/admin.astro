@@ -55,7 +55,17 @@ import { ruta } from '../lib/rutas';
 
     <section>
       <h2>Familias</h2>
-      <p class="hint">Padre o madre, acompañantes adultos e hijos de cada respuesta. Edades al 5 de diciembre.</p>
+      <p class="hint">Responsable del registro, acompañantes adultos e hijos de cada respuesta. Edades al 5 de diciembre.</p>
+      <div class="filtros">
+        <div class="chips" id="filtroAsiste">
+          <label><input type="radio" name="fAsiste" value="" checked />Todas</label>
+          <label><input type="radio" name="fAsiste" value="Sí" />Sí, vamos</label>
+          <label><input type="radio" name="fAsiste" value="Por confirmar" />Por confirmar</label>
+          <label><input type="radio" name="fAsiste" value="No" />No podrán</label>
+        </div>
+        <input type="search" id="filtroTexto" placeholder="Buscar por nombre, niño, celular o correo" aria-label="Buscar familia" />
+        <span class="cnt" id="filtroCuenta"></span>
+      </div>
       <div id="familias"></div>
     </section>
 
