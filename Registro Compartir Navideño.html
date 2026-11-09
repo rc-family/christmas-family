@@ -1,0 +1,372 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Registro Compartir Navideño</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one column, three numbered sections (padre, niños, cierre), sticky resumen al final. Hoja blanca sobre fondo pino. */
+:root{
+  --bg:#0f3d2e;        /* pino profundo */
+  --paper:#fbf8f2;     /* hoja */
+  --paper-2:#f1ece2;   /* relleno de campos */
+  --ink:#1c241f;
+  --muted:#5e6a63;
+  --line:#d9d2c3;
+  --accent:#b8322c;    /* rojo navideño */
+  --accent-ink:#ffffff;
+  --gold:#c9972b;
+  --ok:#2e7d4f;
+  --font-display:"Fraunces",Georgia,"Times New Roman",serif;
+  --font-body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#08201a; --paper:#17211d; --paper-2:#1f2b26; --ink:#eef0ea; --muted:#9aa89f;
+    --line:#33423a; --accent:#d9534c; --gold:#d8aa45; --ok:#5fb37f; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#08201a; --paper:#17211d; --paper-2:#1f2b26; --ink:#eef0ea; --muted:#9aa89f;
+  --line:#33423a; --accent:#d9534c; --gold:#d8aa45; --ok:#5fb37f; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);line-height:1.5;
+  padding-block:20px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.sheet{max-width:640px;margin:0 auto;background:var(--paper);border-radius:14px;padding:28px 22px 32px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+header{display:flex;flex-direction:column;gap:8px;padding-bottom:20px;border-bottom:2px solid var(--line);margin-bottom:8px}
+.eyebrow{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:700}
+h1{font-family:var(--font-display);font-weight:700;font-size:clamp(1.7rem,6vw,2.4rem);line-height:1.1;margin:0;text-wrap:balance}
+.lead{color:var(--muted);margin:0;font-size:.95rem}
+.garland{display:flex;gap:6px;margin-top:4px}
+.garland i{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.garland i:nth-child(3n){background:var(--gold)}
+.garland i:nth-child(3n+2){background:var(--ok)}
+section{padding:22px 0 6px}
+section+section{border-top:1px dashed var(--line)}
+h2{font-family:var(--font-display);font-size:1.3rem;margin:0 0 4px;display:flex;align-items:baseline;gap:10px}
+h2 .n{font-family:var(--font-body);font-size:.75rem;font-weight:700;color:var(--accent);letter-spacing:.08em}
+.hint{color:var(--muted);font-size:.85rem;margin:0 0 14px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 12px}
+.grid>.full{grid-column:1/-1}
+@media (max-width:460px){.grid{grid-template-columns:1fr}}
+label.f{display:flex;flex-direction:column;gap:5px;min-width:0;font-size:.82rem;font-weight:600}
+label.f .req{color:var(--accent)}
+label.f .opt{color:var(--muted);font-weight:400}
+input,select,textarea{font:inherit;font-size:1rem;color:var(--ink);background:var(--paper-2);border:1.5px solid var(--line);border-radius:9px;padding:10px 12px;width:100%;min-width:0}
+textarea{resize:vertical;min-height:64px}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:3px solid color-mix(in srgb,var(--gold) 55%,transparent);outline-offset:1px;border-color:var(--gold)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips label{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border:1.5px solid var(--line);border-radius:999px;background:var(--paper-2);font-size:.9rem;font-weight:500;cursor:pointer;user-select:none}
+.chips input{position:absolute;opacity:0;width:0;height:0}
+.chips label:has(input:checked){border-color:var(--accent);background:var(--accent);color:var(--accent-ink)}
+.chips label:has(input:focus-visible){outline:3px solid color-mix(in srgb,var(--gold) 55%,transparent)}
+.kid{border:1.5px solid var(--line);border-radius:12px;padding:16px 14px;margin-bottom:12px;background:color-mix(in srgb,var(--paper) 70%,var(--paper-2));position:relative}
+.kid-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.kid-head strong{font-family:var(--font-display);font-size:1.05rem}
+.kid-head .age{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.btn{font:inherit;font-weight:700;border:0;border-radius:10px;padding:12px 18px;cursor:pointer;background:var(--accent);color:var(--accent-ink);font-size:1rem}
+.btn.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--accent);padding:10px 14px;font-size:.9rem}
+.btn.small{padding:6px 10px;font-size:.8rem;border-radius:8px}
+.btn[disabled]{opacity:.55;cursor:default}
+.actions{display:flex;flex-direction:column;gap:10px;margin-top:22px}
+.status{font-size:.9rem;color:var(--muted);min-height:1.2em}
+.status.ok{color:var(--ok);font-weight:600}
+.status.err{color:var(--accent);font-weight:600}
+.resumen{display:none;margin-top:18px;border:1.5px solid var(--gold);border-radius:12px;padding:14px;background:var(--paper-2)}
+.resumen.show{display:block}
+.resumen h3{margin:0 0 6px;font-family:var(--font-display);font-size:1.05rem}
+.resumen p{margin:0 0 10px;font-size:.85rem;color:var(--muted)}
+.resumen pre{white-space:pre-wrap;word-break:break-word;font:inherit;font-size:.92rem;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:12px;margin:0 0 10px;user-select:all}
+.admin{display:none;margin-top:24px;border-top:2px solid var(--line);padding-top:18px}
+.admin.show{display:block}
+.admin h2{font-size:1.15rem}
+.tally{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 12px}
+.tally span{background:var(--paper-2);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:.82rem;font-variant-numeric:tabular-nums}
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.85rem;min-width:520px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+td.num{font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:no-preference){.kid{animation:in .25s ease-out}}
+@keyframes in{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}
+</style>
+
+<div class="sheet">
+<header>
+  <span class="eyebrow">Diciembre 2026</span>
+  <h1>Compartir navideño de la familia</h1>
+  <p class="lead">Cuéntanos quiénes vienen para preparar los regalos y juegos de los niños. Toma 2 minutos.</p>
+  <div class="garland"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</header>
+
+<form id="form" novalidate>
+<section>
+  <h2><span class="n">01</span> Papá o mamá</h2>
+  <p class="hint">Quién responde y cómo ubicarte.</p>
+  <div class="grid">
+    <label class="f full">Nombre completo <span class="req">*</span>
+      <input id="p_nombre" name="p_nombre" required autocomplete="name" placeholder="Ej. María Requena">
+    </label>
+    <label class="f">Parentesco con la familia <span class="req">*</span>
+      <input id="p_parentesco" name="p_parentesco" required placeholder="Ej. hija de Rosa, sobrino de Luis">
+    </label>
+    <label class="f">Celular / WhatsApp <span class="req">*</span>
+      <input id="p_celular" name="p_celular" required inputmode="tel" autocomplete="tel" placeholder="9XX XXX XXX">
+    </label>
+    <div class="f full">
+      <span style="font-size:.82rem;font-weight:600;margin-bottom:5px;display:block">¿Asistirán al compartir? <span class="req">*</span></span>
+      <div class="chips">
+        <label><input type="radio" name="p_asiste" value="Sí" id="as1">Sí, vamos</label>
+        <label><input type="radio" name="p_asiste" value="Por confirmar" id="as2">Por confirmar</label>
+        <label><input type="radio" name="p_asiste" value="No" id="as3">No podremos</label>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">02</span> Acompañantes adultos</h2>
+  <p class="hint">Pareja, abuelos u otro adulto que venga contigo. Sirve para calcular la comida. Opcional.</p>
+  <div id="adults"></div>
+  <button type="button" class="btn ghost" id="addAdult">+ Agregar acompañante</button>
+</section>
+
+<section>
+  <h2><span class="n">03</span> Los niños</h2>
+  <p class="hint">Un bloque por cada hijo. La edad se calcula sola al 25 de diciembre.</p>
+  <div id="kids"></div>
+  <button type="button" class="btn ghost" id="addKid">+ Agregar otro niño</button>
+</section>
+
+<section>
+  <h2><span class="n">04</span> Para cerrar</h2>
+  <div class="grid">
+    <div class="f full">
+      <span style="font-size:.82rem;font-weight:600;margin-bottom:5px;display:block">¿Puedes ayudar con algo? <span class="opt">(opcional)</span></span>
+      <div class="chips">
+        <label><input type="checkbox" name="ayuda" value="Comida" id="ay1">Comida</label>
+        <label><input type="checkbox" name="ayuda" value="Decoración" id="ay2">Decoración</label>
+        <label><input type="checkbox" name="ayuda" value="Juegos" id="ay3">Juegos</label>
+        <label><input type="checkbox" name="ayuda" value="Papá Noel" id="ay4">Papá Noel</label>
+        <label><input type="checkbox" name="ayuda" value="Música" id="ay5">Música</label>
+      </div>
+    </div>
+    <label class="f full">Comentarios <span class="opt">(opcional)</span>
+      <textarea id="p_comentarios" name="p_comentarios" placeholder="Algo más que debamos saber"></textarea>
+    </label>
+  </div>
+</section>
+
+<div class="actions">
+  <button type="submit" class="btn" id="submit">Enviar respuesta</button>
+  <div class="status" id="status"></div>
+</div>
+</form>
+
+<div class="resumen" id="resumen">
+  <h3>Tu respuesta</h3>
+  <p id="resumenHint">Copia este texto y envíalo por WhatsApp al organizador.</p>
+  <pre id="resumenTxt"></pre>
+  <button type="button" class="btn small" id="copyBtn">Copiar texto</button>
+</div>
+
+<div class="admin" id="admin">
+  <h2>Respuestas recibidas</h2>
+  <div class="tally" id="tally"></div>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Niño</th><th>Edad</th><th>Sexo</th><th>Intereses</th><th>Alergias</th><th>Familia</th><th>Asiste</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table></div>
+</div>
+</div>
+
+<template id="adultTpl">
+  <div class="kid">
+    <div class="kid-head"><strong>Acompañante <span class="idx"></span></strong><span class="age"></span><button type="button" class="btn ghost small rm">Quitar</button></div>
+    <div class="grid">
+      <label class="f">Nombre <span class="req">*</span><input class="a_nombre" required placeholder="Nombre"></label>
+      <label class="f">Relación contigo <span class="req">*</span>
+        <select class="a_relacion" required>
+          <option value="">Elige</option>
+          <option>Pareja</option><option>Abuelo/a</option><option>Hermano/a</option><option>Tío/a</option><option>Amigo/a</option><option>Otro</option>
+        </select></label>
+      <label class="f">Celular <span class="opt">(opcional)</span><input class="a_celular" inputmode="tel" placeholder="9XX XXX XXX"></label>
+      <label class="f">Restricciones de comida <span class="opt">(opcional)</span><input class="a_alergias" placeholder="Ej. vegetariano, sin gluten"></label>
+    </div>
+  </div>
+</template>
+
+<template id="kidTpl">
+  <div class="kid">
+    <div class="kid-head"><strong>Niño <span class="idx"></span></strong><span class="age"></span><button type="button" class="btn ghost small rm">Quitar</button></div>
+    <div class="grid">
+      <label class="f">Nombre <span class="req">*</span><input class="k_nombre" required placeholder="Nombre"></label>
+      <label class="f">Fecha de nacimiento <span class="req">*</span><input class="k_fecha" type="date" required max="2026-12-25"></label>
+      <div class="f"><span style="font-size:.82rem;font-weight:600;margin-bottom:5px;display:block">Sexo <span class="req">*</span></span>
+        <div class="chips sexo"><label><input type="radio" value="Niño">Niño</label><label><input type="radio" value="Niña">Niña</label></div></div>
+      <label class="f">Personajes o intereses <span class="opt">(opcional)</span><input class="k_intereses" placeholder="Dinosaurios, princesas, fútbol..."></label>
+      <label class="f full">Alergias o restricciones de comida <span class="opt">(opcional)</span><input class="k_alergias" placeholder="Ej. maní, lactosa"></label>
+    </div>
+  </div>
+</template>
+
+<script>
+(function(){
+  const NAV = new Date(2026,11,25);
+  const kids = document.getElementById('kids');
+  const tpl = document.getElementById('kidTpl');
+  const statusEl = document.getElementById('status');
+  let seq = 0;
+
+  function ageAt(dStr){
+    if(!dStr) return '';
+    const d = new Date(dStr+'T00:00:00');
+    if(isNaN(d)) return '';
+    let y = NAV.getFullYear()-d.getFullYear();
+    let m = NAV.getMonth()-d.getMonth();
+    if(m<0 || (m===0 && NAV.getDate()<d.getDate())){ y--; m+=12; }
+    if(y<=0) return m+' meses';
+    return y+(y===1?' año':' años')+(y<3?' '+m+'m':'');
+  }
+  function addKid(){
+    seq++;
+    const node = tpl.content.firstElementChild.cloneNode(true);
+    node.querySelector('.idx').textContent = kids.children.length+1;
+    node.querySelectorAll('.sexo input').forEach((r,i)=>{ r.name='sexo_'+seq; r.id='sexo_'+seq+'_'+i; });
+    node.querySelector('.k_nombre').id='k_nombre_'+seq;
+    node.querySelector('.k_fecha').id='k_fecha_'+seq;
+    node.querySelector('.k_intereses').id='k_intereses_'+seq;
+    node.querySelector('.k_alergias').id='k_alergias_'+seq;
+    const fecha = node.querySelector('.k_fecha'), age = node.querySelector('.age');
+    fecha.addEventListener('input',()=>{ const a=ageAt(fecha.value); age.textContent = a? a+' al 25 dic':''; });
+    node.querySelector('.rm').addEventListener('click',()=>{ node.remove(); renumber(); });
+    kids.appendChild(node);
+  }
+  function renumber(){ [...kids.children].forEach((k,i)=>k.querySelector('.idx').textContent=i+1); }
+  document.getElementById('addKid').addEventListener('click',addKid);
+  addKid();
+
+  const adults = document.getElementById('adults');
+  const adultTpl = document.getElementById('adultTpl');
+  let aseq = 0;
+  function addAdult(){
+    aseq++;
+    const node = adultTpl.content.firstElementChild.cloneNode(true);
+    node.querySelector('.idx').textContent = adults.children.length+1;
+    node.querySelector('.a_nombre').id='a_nombre_'+aseq;
+    node.querySelector('.a_relacion').id='a_relacion_'+aseq;
+    node.querySelector('.a_celular').id='a_celular_'+aseq;
+    node.querySelector('.a_alergias').id='a_alergias_'+aseq;
+    node.querySelector('.rm').addEventListener('click',()=>{ node.remove(); [...adults.children].forEach((a,i)=>a.querySelector('.idx').textContent=i+1); });
+    adults.appendChild(node);
+    node.querySelector('.a_nombre').focus();
+  }
+  document.getElementById('addAdult').addEventListener('click',addAdult);
+
+  function readForm(){
+    const v = id=>document.getElementById(id).value.trim();
+    const asiste = (document.querySelector('input[name="p_asiste"]:checked')||{}).value||'';
+    const ayuda = [...document.querySelectorAll('input[name="ayuda"]:checked')].map(c=>c.value);
+    const ninos = [...kids.children].map(k=>({
+      nombre:k.querySelector('.k_nombre').value.trim(),
+      fecha:k.querySelector('.k_fecha').value,
+      edad:ageAt(k.querySelector('.k_fecha').value),
+      sexo:(k.querySelector('.sexo input:checked')||{}).value||'',
+      intereses:k.querySelector('.k_intereses').value.trim(),
+      alergias:k.querySelector('.k_alergias').value.trim()
+    }));
+    const acompanantes = [...adults.children].map(a=>({
+      nombre:a.querySelector('.a_nombre').value.trim(),
+      relacion:a.querySelector('.a_relacion').value,
+      celular:a.querySelector('.a_celular').value.trim(),
+      alergias:a.querySelector('.a_alergias').value.trim()
+    }));
+    return {padre:v('p_nombre'),parentesco:v('p_parentesco'),celular:v('p_celular'),asiste,ayuda,comentarios:v('p_comentarios'),acompanantes,ninos,enviado:new Date().toISOString()};
+  }
+  function validate(d){
+    if(!d.padre||!d.parentesco||!d.celular||!d.asiste) return 'Completa nombre, parentesco, celular y asistencia.';
+    for(const a of d.acompanantes){ if(!a.nombre||!a.relacion) return 'En cada acompañante: nombre y relación.'; }
+    if(!d.ninos.length) return 'Agrega al menos un niño.';
+    for(const n of d.ninos){ if(!n.nombre||!n.fecha||!n.sexo) return 'En cada niño: nombre, fecha de nacimiento y sexo.'; }
+    return '';
+  }
+  function toText(d){
+    const L=['*Compartir navideño - respuesta*',
+      'Padre/madre: '+d.padre+' ('+d.parentesco+')','Celular: '+d.celular,'Asiste: '+d.asiste,''];
+    d.acompanantes.forEach((a,i)=>{
+      L.push('Acompañante '+(i+1)+': '+a.nombre+' - '+a.relacion+(a.celular?' - '+a.celular:'')+(a.alergias?' - '+a.alergias:''));
+    });
+    if(d.acompanantes.length) L.push('');
+    d.ninos.forEach((n,i)=>{
+      L.push('Niño '+(i+1)+': '+n.nombre+' - '+n.sexo+' - '+n.edad);
+      if(n.intereses) L.push('  Intereses: '+n.intereses);
+      if(n.alergias) L.push('  Alergias: '+n.alergias);
+    });
+    if(d.ayuda.length) L.push('','Puede ayudar con: '+d.ayuda.join(', '));
+    if(d.comentarios) L.push('Comentarios: '+d.comentarios);
+    return L.join('\n');
+  }
+  function showResumen(d, saved){
+    const box=document.getElementById('resumen');
+    document.getElementById('resumenTxt').textContent=toText(d);
+    document.getElementById('resumenHint').textContent = saved
+      ? 'Tu respuesta quedó registrada. Si quieres, también puedes copiarla y enviarla por WhatsApp.'
+      : 'Copia este texto y envíalo por WhatsApp al organizador.';
+    box.classList.add('show'); box.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  document.getElementById('copyBtn').addEventListener('click',async()=>{
+    const t=document.getElementById('resumenTxt').textContent, b=document.getElementById('copyBtn');
+    try{ await navigator.clipboard.writeText(t); b.textContent='Copiado'; }
+    catch(e){ const r=document.createRange(); r.selectNodeContents(document.getElementById('resumenTxt')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent='Selecciona y copia'; }
+    setTimeout(()=>b.textContent='Copiar texto',2000);
+  });
+
+  let db=null, canWrite=false;
+  (async()=>{
+    try{
+      db = await (window.claude&&window.claude.use ? window.claude.use('db') : null);
+      const user = await (window.claude&&window.claude.use ? window.claude.use('user') : null);
+      if(db && user){ const c = await user.can('data.write'); canWrite = c!==false; if(await user.isOwner()) startAdmin(); }
+    }catch(e){ db=null; }
+  })();
+
+  document.getElementById('form').addEventListener('submit',async ev=>{
+    ev.preventDefault();
+    const d=readForm(); const err=validate(d);
+    statusEl.className='status';
+    if(err){ statusEl.textContent=err; statusEl.classList.add('err'); return; }
+    const btn=document.getElementById('submit'); btn.disabled=true; statusEl.textContent='Enviando...';
+    let saved=false;
+    if(db && canWrite){
+      try{ await db.collection('respuestas').add(d); saved=true; }catch(e){ saved=false; }
+    }
+    btn.disabled=false;
+    statusEl.textContent = saved ? 'Respuesta enviada. ¡Gracias!' : 'Listo. Ahora copia tu respuesta y envíala por WhatsApp.';
+    statusEl.classList.add('ok');
+    showResumen(d, saved);
+  });
+
+  function startAdmin(){
+    const admin=document.getElementById('admin'); admin.classList.add('show');
+    db.collection('respuestas').orderBy('enviado','desc').onSnapshot(snap=>{
+      const rows=document.getElementById('rows'); rows.innerHTML='';
+      let fam=0,kidsN=0,ninos=0,ninas=0,adultsN=0; const ages={};
+      snap.docs.forEach(doc=>{
+        const d=doc.data(); fam++; adultsN += 1 + (d.acompanantes||[]).length;
+        (d.ninos||[]).forEach(n=>{
+          kidsN++; if(n.sexo==='Niño') ninos++; else if(n.sexo==='Niña') ninas++;
+          const y=parseInt(n.edad)||0; const band= n.edad.includes('meses')?'0-1':y<=3?'1-3':y<=6?'4-6':y<=9?'7-9':'10+'; ages[band]=(ages[band]||0)+1;
+          const tr=document.createElement('tr');
+          [n.nombre,n.edad,n.sexo,n.intereses||'',n.alergias||'',d.padre+' ('+d.parentesco+')',d.asiste].forEach((c,i)=>{const td=document.createElement('td'); td.textContent=c; if(i===1) td.className='num'; tr.appendChild(td);});
+          rows.appendChild(tr);
+        });
+      });
+      const t=document.getElementById('tally'); t.innerHTML='';
+      [['Familias',fam],['Adultos',adultsN],['Niños',kidsN],['Niños (M)',ninos],['Niñas (F)',ninas],...Object.entries(ages).map(([k,v])=>[k+' años',v])]
+        .forEach(([k,v])=>{const s=document.createElement('span'); s.textContent=k+': '+v; t.appendChild(s);});
+      if(!kidsN){ const tr=document.createElement('tr'); const td=document.createElement('td'); td.colSpan=7; td.textContent='Aún no hay respuestas.'; tr.appendChild(td); rows.appendChild(tr); }
+    },err=>{ /* sin lectura: solo formulario */ });
+  }
+})();
+</script>
+
+</body></html>

@@ -1,0 +1,154 @@
+---
+import Base from '../layouts/Base.astro';
+import { FECHA_COMPARTIR_ISO } from '../lib/edad';
+import DatosCompartir from '../components/DatosCompartir.astro';
+---
+<Base title="Registro · Compartir navideño">
+  <div class="userbar">
+    <span>Sesión: <strong id="userEmail">...</strong></span>
+    <span class="links">
+      <a href="/admin" id="adminLink" hidden>Ver respuestas</a>
+      <button type="button" class="btn link" id="logoutBtn">Salir</button>
+    </span>
+  </div>
+  <header class="top compact">
+    <h1>Compartir navideño de la familia</h1>
+    <p class="lead">Cuéntanos quiénes vienen para preparar los regalos y juegos de los niños. Toma 2 minutos.</p>
+    <DatosCompartir />
+  </header>
+
+  <div class="loading" id="loading">Cargando tu registro...</div>
+
+  <form id="form" novalidate hidden>
+    <section>
+      <h2><span class="n">01</span> Papá o mamá</h2>
+      <p class="hint">Quién responde y cómo ubicarte.</p>
+      <div class="grid">
+        <label class="f full">Nombre completo <span class="req">*</span>
+          <input id="p_nombre" name="p_nombre" required autocomplete="name" placeholder="Ej. Eladio Requena" />
+        </label>
+        <label class="f">Parentesco con la familia <span class="req">*</span>
+          <input id="p_parentesco" name="p_parentesco" required placeholder="Ej. hija de Rosa, sobrino de Luis" />
+        </label>
+        <label class="f">Celular / WhatsApp <span class="req">*</span>
+          <input id="p_celular" name="p_celular" required inputmode="tel" autocomplete="tel" placeholder="9XX XXX XXX" />
+        </label>
+        <div class="f full">
+          <span class="lbl">¿Asistirán al compartir? <span class="req">*</span></span>
+          <div class="chips">
+            <label><input type="radio" name="p_asiste" value="Sí" />Sí, vamos</label>
+            <label><input type="radio" name="p_asiste" value="Por confirmar" />Por confirmar</label>
+            <label><input type="radio" name="p_asiste" value="No" />No podremos</label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2><span class="n">02</span> Acompañantes adultos</h2>
+      <p class="hint">Pareja, abuelos u otro adulto que venga contigo. Sirve para calcular la comida. Opcional.</p>
+      <div id="adults"></div>
+      <button type="button" class="btn ghost" id="addAdult">+ Agregar acompañante</button>
+    </section>
+
+    <section>
+      <h2><span class="n">03</span> Los niños</h2>
+      <p class="hint">Si vienen niños contigo, agrega un bloque por cada uno. La edad se calcula sola al 5 de diciembre. Opcional.</p>
+      <div id="kids"></div>
+      <button type="button" class="btn ghost" id="addKid">+ Agregar niño</button>
+    </section>
+
+    <section>
+      <h2><span class="n">04</span> Para cerrar</h2>
+      <div class="grid">
+        <div class="f full">
+          <span class="lbl">¿Puedes ayudar con algo? <span class="opt">(opcional)</span></span>
+          <div class="chips">
+            <label><input type="checkbox" name="ayuda" value="Comida" />Comida</label>
+            <label><input type="checkbox" name="ayuda" value="Decoración" />Decoración</label>
+            <label><input type="checkbox" name="ayuda" value="Juegos" />Juegos</label>
+            <label><input type="checkbox" name="ayuda" value="Papá Noel" />Papá Noel</label>
+            <label><input type="checkbox" name="ayuda" value="Música" />Música</label>
+          </div>
+        </div>
+        <label class="f full">Comentarios <span class="opt">(opcional)</span>
+          <textarea id="p_comentarios" name="p_comentarios" placeholder="Algo más que debamos saber"></textarea>
+        </label>
+      </div>
+    </section>
+
+    <div class="actions">
+      <button type="submit" class="btn" id="submit">Enviar respuesta</button>
+      <button type="button" class="btn link" id="backBtn" hidden>Volver sin guardar cambios</button>
+      <div class="status" id="status"></div>
+    </div>
+  </form>
+
+  <div id="confirm" hidden>
+    <section class="gracias">
+      <div class="check" aria-hidden="true">✓</div>
+      <h2 id="cTitulo">¡Gracias por registrarte!</h2>
+      <p class="lead" id="cLead">Tu respuesta quedó guardada.</p>
+    </section>
+
+    <section>
+      <h2>Lo que registraste</h2>
+      <div id="cTarjeta"></div>
+    </section>
+
+    <section>
+      <h2>¿Algo cambió?</h2>
+      <p class="hint">Puedes actualizar tu respuesta cuantas veces quieras antes del compartir.</p>
+      <div class="opciones">
+        <button type="button" class="btn ghost" id="btnAddKid">+ Agregar un niño</button>
+        <button type="button" class="btn ghost" id="btnAddAdult">+ Agregar acompañante</button>
+        <button type="button" class="btn ghost" id="btnEdit">Editar mi respuesta</button>
+        <button type="button" class="btn ghost danger" id="btnCancel">Cancelar mi participación</button>
+        <button type="button" class="btn" id="btnReconfirm" hidden>Sí, después de todo vamos</button>
+      </div>
+      <div class="aviso" id="cancelBox" hidden>
+        <p><strong>¿Seguro que no podrán venir?</strong> Guardaremos tu respuesta como "No podremos". Tus datos se conservan por si cambias de opinión.</p>
+        <div class="opciones">
+          <button type="button" class="btn" id="cancelYes">Sí, no podremos ir</button>
+          <button type="button" class="btn ghost" id="cancelNo">Volver</button>
+        </div>
+      </div>
+      <div class="status" id="cStatus"></div>
+    </section>
+
+  </div>
+
+  <template id="adultTpl">
+    <div class="kid">
+      <div class="kid-head"><strong>Acompañante <span class="idx"></span></strong><button type="button" class="btn ghost small rm">Quitar</button></div>
+      <div class="grid">
+        <label class="f">Nombre <span class="req">*</span><input class="a_nombre" required placeholder="Nombre" /></label>
+        <label class="f">Relación contigo <span class="req">*</span>
+          <select class="a_relacion" required>
+            <option value="">Elige</option>
+            <option>Pareja</option><option>Abuelo/a</option><option>Hermano/a</option><option>Tío/a</option><option>Amigo/a</option><option>Otro</option>
+          </select></label>
+        <label class="f">Celular <span class="opt">(opcional)</span><input class="a_celular" inputmode="tel" placeholder="9XX XXX XXX" /></label>
+        <label class="f">Restricciones de comida <span class="opt">(opcional)</span><input class="a_restricciones" placeholder="Ej. vegetariano, sin gluten" /></label>
+      </div>
+    </div>
+  </template>
+
+  <template id="kidTpl">
+    <div class="kid">
+      <div class="kid-head"><strong>Niño <span class="idx"></span></strong><span class="age"></span><button type="button" class="btn ghost small rm">Quitar</button></div>
+      <div class="grid">
+        <label class="f">Nombre <span class="req">*</span><input class="k_nombre" required placeholder="Nombre" /></label>
+        <label class="f">Fecha de nacimiento <span class="req">*</span><input class="k_fecha" type="date" required max={FECHA_COMPARTIR_ISO} /></label>
+        <div class="f"><span class="lbl">Sexo <span class="req">*</span></span>
+          <div class="chips sexo"><label><input type="radio" value="Niño" />Niño</label><label><input type="radio" value="Niña" />Niña</label></div></div>
+        <label class="f">Personajes o intereses <span class="opt">(opcional)</span><input class="k_intereses" placeholder="Dinosaurios, princesas, fútbol..." /></label>
+        <label class="f full">Alergias o restricciones de comida <span class="opt">(opcional)</span><input class="k_alergias" placeholder="Ej. maní, lactosa" /></label>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    import '../scripts/registro';
+  </script>
+</Base>
