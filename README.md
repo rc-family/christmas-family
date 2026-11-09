@@ -118,6 +118,19 @@ Configuración necesaria, una sola vez:
 
 Para compilar a mano: `npm run build` genera `dist/` estático; `SITE_URL` y `BASE_PATH` son opcionales.
 
+## Medición de uso
+
+- Tabla `navidad_eventos` (migración `20261110_navidad_eventos.sql`): un evento por acción, sin datos
+  personales. Visitantes anónimos y usuarios pueden insertar (la base valida el nombre del evento y el
+  tamaño); solo los organizadores pueden leer; nadie puede editar ni borrar.
+- `src/lib/eventos.ts` expone `registrar(evento, detalle)`; se llama desde login, registro, música y admin.
+  Cada navegador guarda un identificador aleatorio en localStorage (`navidad.visitante`) para contar personas.
+  Eventos: visita, vio_login, ingreso, vio_formulario, validacion_fallo, guardo, edito, agrego_nino,
+  agrego_acompanante, cancelo, reconfirmo, error_guardar, musica_*, admin_*.
+- `src/lib/uso.ts` resume los eventos (embudo acumulativo por persona, dispositivos, fricción, música) y el
+  panel `/admin` lo muestra en la sección "Uso del sitio"; el Excel incluye la hoja "Uso".
+- Origen de la visita: si la invitación enlaza con `?desde=whatsapp`, ese valor se guarda en cada evento.
+
 ## Monitoreo con Sentry
 
 - Proyecto `christmas-family` en la organización `mobitec-ca` (plataforma Astro / navegador).

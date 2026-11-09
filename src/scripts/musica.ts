@@ -4,6 +4,7 @@
  * Recuerda pista, volumen y estado en localStorage para que siga entre páginas.
  */
 import { PISTAS } from '../lib/musica';
+import { registrar } from '../lib/eventos';
 
 const CLAVE = 'navidad.musica';
 
@@ -67,7 +68,7 @@ function iniciar() {
       b.className = 'm-pista' + (idx === estado.i ? ' activa' : '');
       b.setAttribute('aria-current', idx === estado.i ? 'true' : 'false');
       b.innerHTML = `<span class="m-num">${idx + 1}</span><span class="m-txt"><strong>${p.titulo}</strong><small>${p.interprete}</small></span>`;
-      b.addEventListener('click', () => cargar(idx, true));
+      b.addEventListener('click', () => { cargar(idx, true); registrar('musica_cambio', { pista: p.titulo }); });
       li.appendChild(b);
       lista.appendChild(li);
     });
@@ -136,12 +137,13 @@ function iniciar() {
   }
 
   // Controles
-  btn.addEventListener('click', () => abrir(panel.hidden === true));
-  play.addEventListener('click', () => (audio.paused ? void reproducir() : pausar()));
-  prev.addEventListener('click', () => cargar(estado.i - 1, estado.sonando || !audio.paused));
-  next.addEventListener('click', () => cargar(estado.i + 1, estado.sonando || !audio.paused));
+  btn.addEventListener('click', () => { if (panel.hidden) registrar('musica_abrio'); abrir(panel.hidden === true); });
+  play.addEventListener('click', () => { if (audio.paused) { registrar('musica_play', { pista: PISTAS[estado.i].titulo }); void reproducir(); } else pausar(); });
+  prev.addEventListener('click', () => { cargar(estado.i - 1, estado.sonando || !audio.paused); registrar('musica_cambio', { pista: PISTAS[estado.i].titulo }); });
+  next.addEventListener('click', () => { cargar(estado.i + 1, estado.sonando || !audio.paused); registrar('musica_cambio', { pista: PISTAS[estado.i].titulo }); });
   mute.addEventListener('click', () => {
     estado.mute = !estado.mute;
+    registrar('musica_mute', { silenciado: estado.mute });
     aplicarVolumen();
     guardar();
     pintar();

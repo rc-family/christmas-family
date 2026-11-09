@@ -3,6 +3,8 @@ import { edadAlCompartir, aniosAlCompartir, rangoEdad } from '../lib/edad';
 import type { FamiliaRow, AcompananteRow, NinoRow } from '../lib/database.types';
 import * as XLSX from 'xlsx';
 import { el, tarjetaFamilia } from '../lib/tarjeta';
+import { registrar, registrarVisita, usuarioEventos } from '../lib/eventos';
+import { resumirUso, etiquetaEvento, detalleTexto, type EventoRow, type ResumenUso, type Conteo } from '../lib/uso';
 
 type Familia = FamiliaRow & { navidad_acompanantes: AcompananteRow[]; navidad_ninos: NinoRow[] };
 type Fila = (string | number)[];
@@ -37,7 +39,7 @@ function llenarDl(dl: HTMLElement, filas: [string, number | string, boolean?][])
 }
 
 /** Datos de la última carga, listos para exportar a Excel. */
-const hojas = { resumen: [] as Fila[], familias: [] as Fila[], acompanantes: [] as Fila[], ninos: [] as Fila[] };
+const hojas = { resumen: [] as Fila[], familias: [] as Fila[], acompanantes: [] as Fila[], ninos: [] as Fila[], uso: [] as Fila[] };
 
 function render(fams: Familia[]) {
   const cont = $('familias'), rowsN = $('rowsNinos');
@@ -134,6 +136,72 @@ function render(fams: Familia[]) {
   }
 }
 
+/* ---------- Uso del sitio ---------- */
+
+function dlConteos(dl: HTMLElement, items: Conteo[], vacio = 'Sin datos aún') {
+  if (!items.length) { dl.innerHTML = ''; dl.appendChild(el('span', 'vacio', vacio)); return; }
+  llenarDl(dl, items.slice(0, 6).map((c): [string, number] => [c.clave, c.n]));
+}
+
+function renderUso(eventos: EventoRow[]) {
+  const u: ResumenUso = resumirUso(eventos);
+  $('usoPersonas').textContent = String(u.sesiones);
+
+  const ol = $('usoEmbudo'); ol.innerHTML = '';
+  u.embudo.forEach((p, i) => {
+    const li = el('li');
+    const fila = el('div', 'fila'); fila.appendChild(el('span', '', p.etiqueta)); fila.appendChild(el('b', '', `${p.sesiones} · ${p.pct}%`));
+    const barra = el('div', 'barra'); const rel = el('i'); rel.style.width = p.pct + '%'; barra.appendChild(rel);
+    li.appendChild(fila); li.appendChild(barra);
+    const prev = u.embudo[i - 1];
+    if (prev && prev.sesiones > p.sesiones) li.appendChild(el('div', 'caida', `−${prev.sesiones - p.sesiones} se quedaron en el paso anterior`));
+    ol.appendChild(li);
+  });
+
+  dlConteos($('usoDispositivos'), u.dispositivos);
+  dlConteos($('usoNavegadores'), u.navegadores);
+  dlConteos($('usoOrigenes'), u.origenes);
+  llenarDl($('usoFriccion'), [
+    ['Intentos con campos faltantes', u.intentosFallidos],
+    ['Errores al guardar', u.erroresGuardar],
+    ['Tiempo típico hasta guardar', u.segundosMediana === null ? '—' : u.segundosMediana < 90 ? `${u.segundosMediana} s` : `${Math.round(u.segundosMediana / 60)} min`],
+  ]);
+  dlConteos($('usoCampos'), u.camposFallidos, 'Nadie ha fallado la validación');
+  llenarDl($('usoMusica'), [['Abrieron el reproductor', u.musica.abrieron], ['Dieron play', u.musica.dieronPlay]]);
+  dlConteos($('usoPistas'), u.musica.pistas, 'Nadie ha puesto música aún');
+
+  const rows = $('rowsEventos'); rows.innerHTML = '';
+  for (const e of u.ultimos) {
+    rows.appendChild(tr([
+      td(fecha(e.creado), 'num'), td(etiquetaEvento(e.evento)), td(detalleTexto(e)), td(e.pagina),
+      td(`${e.dispositivo} · ${e.navegador ?? ''}`), td(e.user_id ? e.user_id.slice(-6) : 'anónimo ' + e.sesion.slice(0, 6), 'mono'),
+    ]));
+  }
+  if (!u.ultimos.length) rows.appendChild(tr([td('Aún no hay eventos.')]));
+
+  hojas.uso = [
+    ['Indicador', 'Valor'],
+    ['Personas distintas', u.sesiones], ['Con sesión iniciada', u.usuarios],
+    ...u.embudo.map((p): Fila => [`Embudo: ${p.etiqueta}`, `${p.sesiones} (${p.pct}%)`]),
+    ...u.dispositivos.map((c): Fila => ['Dispositivo: ' + c.clave, c.n]),
+    ...u.navegadores.map((c): Fila => ['Navegador: ' + c.clave, c.n]),
+    ...u.origenes.map((c): Fila => ['Origen: ' + c.clave, c.n]),
+    ['Intentos con campos faltantes', u.intentosFallidos], ['Errores al guardar', u.erroresGuardar],
+    ['Tiempo típico hasta guardar (s)', u.segundosMediana ?? ''],
+    ...u.camposFallidos.map((c): Fila => ['Campo que falló: ' + c.clave, c.n]),
+    ['Música: abrieron el reproductor', u.musica.abrieron], ['Música: dieron play', u.musica.dieronPlay],
+    ...u.musica.pistas.map((c): Fila => ['Canción: ' + c.clave, c.n]),
+  ];
+}
+
+async function cargarUso() {
+  const desde = new Date(Date.now() - 120 * 24 * 3600 * 1000).toISOString();
+  const { data, error } = await supabase
+    .from('navidad_eventos').select('*').gte('creado', desde).order('creado', { ascending: false }).limit(5000);
+  if (error) throw error;
+  renderUso((data ?? []) as EventoRow[]);
+}
+
 async function cargar() {
   const { data, error } = await supabase
     .from('navidad_familias')
@@ -148,6 +216,18 @@ function anchos(filas: Fila[]) {
   return (filas[0] ?? []).map((_, c) => ({ wch: Math.min(50, Math.max(10, ...filas.map((r) => String(r[c] ?? '').length + 2))) }));
 }
 
+/* ---------- Pestañas (Respuestas / Uso del sitio), con #uso en la URL ---------- */
+const VISTAS = ['respuestas', 'uso'] as const;
+type Vista = typeof VISTAS[number];
+function mostrarVista(v: Vista) {
+  $('vistaRespuestas').hidden = v !== 'respuestas';
+  $('vistaUso').hidden = v !== 'uso';
+  document.querySelectorAll<HTMLButtonElement>('.tabs [data-vista]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.vista === v)));
+  if (location.hash !== (v === 'uso' ? '#uso' : '')) history.replaceState(null, '', v === 'uso' ? '#uso' : location.pathname);
+}
+document.querySelectorAll<HTMLButtonElement>('.tabs [data-vista]').forEach((b) => b.addEventListener('click', () => mostrarVista(b.dataset.vista as Vista)));
+window.addEventListener('hashchange', () => mostrarVista(location.hash === '#uso' ? 'uso' : 'respuestas'));
+
 $('xlsxBtn').addEventListener('click', () => {
   const wb = XLSX.utils.book_new();
   const agregar = (nombre: string, filas: Fila[]) => {
@@ -159,6 +239,8 @@ $('xlsxBtn').addEventListener('click', () => {
   agregar('Familias', hojas.familias);
   agregar('Acompañantes', hojas.acompanantes);
   agregar('Niños', hojas.ninos);
+  agregar('Uso', hojas.uso);
+  registrar('admin_excel');
   const fecha = new Date().toISOString().slice(0, 10);
   XLSX.writeFile(wb, `compartir-navideno-${fecha}.xlsx`);
 });
@@ -186,13 +268,19 @@ $('xlsxBtn').addEventListener('click', () => {
     return;
   }
   $('panel').hidden = false;
+  mostrarVista(location.hash === '#uso' ? 'uso' : 'respuestas');
+  usuarioEventos(user.id);
+  registrarVisita();
+  registrar('admin_abrio');
   try { await cargar(); }
   catch (e) { $('denied').hidden = false; $('denied').textContent = 'No se pudieron cargar las respuestas: ' + mensajeError(e); }
+  cargarUso().catch((e) => { $('usoError').hidden = false; $('usoError').textContent = 'No se pudo cargar el uso: ' + mensajeError(e); });
 
   // Actualización en vivo cuando llegan nuevas respuestas.
   supabase.channel('navidad')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'navidad_familias' }, () => cargar().catch(() => {}))
     .on('postgres_changes', { event: '*', schema: 'public', table: 'navidad_ninos' }, () => cargar().catch(() => {}))
     .on('postgres_changes', { event: '*', schema: 'public', table: 'navidad_acompanantes' }, () => cargar().catch(() => {}))
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'navidad_eventos' }, () => cargarUso().catch(() => {}))
     .subscribe();
 })();

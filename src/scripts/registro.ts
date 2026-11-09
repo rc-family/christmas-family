@@ -1,6 +1,7 @@
 import { supabase, requireUser, isAdmin, signOut } from '../lib/supabase';
 import { edadAlCompartir } from '../lib/edad';
 import { tarjetaFamilia } from '../lib/tarjeta';
+import { registrar, registrarVisita, usuarioEventos } from '../lib/eventos';
 import type { Asiste, Sexo, AcompananteRow, NinoRow } from '../lib/database.types';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -121,6 +122,14 @@ function poblar(d: Respuesta) {
 }
 
 function validate(d: Respuesta): string {
+  const faltan: string[] = [];
+  if (!d.nombre) faltan.push('nombre');
+  if (!d.parentesco) faltan.push('parentesco');
+  if (!d.celular) faltan.push('celular');
+  if (!d.asiste) faltan.push('asiste');
+  if (d.acompanantes.some((a) => !a.nombre || !a.relacion)) faltan.push('acompanante');
+  if (d.ninos.some((n) => !n.nombre || !n.fecha || !n.sexo)) faltan.push('nino');
+  if (faltan.length) registrar('validacion_fallo', { campos: faltan.join(',') });
   if (!d.nombre || !d.parentesco || !d.celular || !d.asiste) return 'Completa nombre, parentesco, celular y asistencia.';
   for (const a of d.acompanantes) if (!a.nombre || !a.relacion) return 'En cada acompañante: nombre y relación.';
   for (const n of d.ninos) if (!n.nombre || !n.fecha || !n.sexo) return 'En cada niño: nombre, fecha de nacimiento y sexo (o quita el bloque vacío).';
@@ -153,9 +162,12 @@ function mostrarConfirmacion(d: Respuesta) {
 }
 
 /** Muestra el formulario; opcionalmente agrega un bloque nuevo y lo enfoca. */
+let inicioFormulario = 0;
 function mostrarFormulario(agregar?: 'nino' | 'adulto') {
   confirm.hidden = true;
   form.hidden = false;
+  inicioFormulario = Date.now();
+  registrar(agregar === 'nino' ? 'agrego_nino' : agregar === 'adulto' ? 'agrego_acompanante' : guardada ? 'edito' : 'vio_formulario');
   $('submit').textContent = guardada ? 'Guardar cambios' : 'Enviar respuesta';
   $('backBtn').hidden = !guardada;
   statusEl.textContent = ''; statusEl.className = 'status';
@@ -222,6 +234,8 @@ async function cargar(userId: string): Promise<Respuesta | null> {
 (async () => {
   const user = await requireUser();
   if (!user) return;
+  usuarioEventos(user.id);
+  registrarVisita();
   $('userEmail').textContent = user.email;
   isAdmin().then((ok) => { if (ok) $('adminLink').hidden = false; });
 
@@ -232,13 +246,19 @@ async function cargar(userId: string): Promise<Respuesta | null> {
     if (err) { status.textContent = err; status.classList.add('err'); return false; }
     botones.forEach((b) => (b.disabled = true));
     status.textContent = 'Guardando...';
+    const esNuevo = !guardada;
     try {
       await guardar(user!.id, user!.email, d);
+      registrar('guardo', {
+        nuevo: esNuevo, asiste: d.asiste, ninos: d.ninos.length, acompanantes: d.acompanantes.length,
+        segundos: inicioFormulario ? Math.round((Date.now() - inicioFormulario) / 1000) : null,
+      });
       guardada = d;
       poblar(d);
       mostrarConfirmacion(d);
       return true;
     } catch (e) {
+      registrar('error_guardar', { mensaje: mensajeError(e).slice(0, 200) });
       status.textContent = 'No se pudo guardar: ' + mensajeError(e); status.classList.add('err');
       return false;
     } finally { botones.forEach((b) => (b.disabled = false)); }
@@ -269,6 +289,7 @@ async function cargar(userId: string): Promise<Respuesta | null> {
 
   const cambiarAsistencia = (asiste: Asiste, boton: HTMLButtonElement) => {
     if (!guardada) return;
+    registrar(asiste === 'No' ? 'cancelo' : 'reconfirmo');
     enviar({ ...guardada, asiste }, cStatus, [boton]);
   };
   $('cancelYes').addEventListener('click', () => cambiarAsistencia('No', $<HTMLButtonElement>('cancelYes')));

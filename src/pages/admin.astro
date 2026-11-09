@@ -21,6 +21,12 @@ import { ruta } from '../lib/rutas';
   <div class="status err" id="denied" hidden>Esta página es solo para organizadores. Si eres organizador, pide que te asignen el rol <code>admin</code> en Clerk.</div>
 
   <div id="panel" hidden>
+    <nav class="tabs" role="tablist" aria-label="Secciones del panel">
+      <button type="button" role="tab" id="tabRespuestas" aria-selected="true" aria-controls="vistaRespuestas" data-vista="respuestas">Respuestas</button>
+      <button type="button" role="tab" id="tabUso" aria-selected="false" aria-controls="vistaUso" data-vista="uso">Uso del sitio</button>
+    </nav>
+
+    <div id="vistaRespuestas" role="tabpanel" aria-labelledby="tabRespuestas">
     <section>
       <h2>Resumen</h2>
       <p class="hint">Los totales cuentan solo a las familias que no respondieron "No podremos".</p>
@@ -66,7 +72,53 @@ import { ruta } from '../lib/rutas';
 
     <div class="actions">
       <button type="button" class="btn ghost" id="xlsxBtn">Exportar a Excel</button>
-      <p class="hint">Un archivo .xlsx con hojas de Resumen, Familias, Acompañantes y Niños.</p>
+      <p class="hint">Un archivo .xlsx con hojas de Resumen, Familias, Acompañantes, Niños y Uso.</p>
+    </div>
+    </div>
+
+    <div id="vistaUso" role="tabpanel" aria-labelledby="tabUso" hidden>
+    <section>
+      <h2>Uso del sitio</h2>
+      <p class="hint">Cómo llegan y qué hacen las familias, sin datos personales. Cuenta personas distintas (un identificador guardado en cada navegador, unido al usuario si ingresó; quien use dos dispositivos sin ingresar cuenta dos veces); lo que hacen los organizadores en este panel no entra en los indicadores. Se actualiza en vivo.</p>
+      <div class="stats uso">
+        <article class="stat">
+          <h3>Embudo de registro</h3>
+          <div class="big" id="usoPersonas">0</div>
+          <p class="hint">personas distintas</p>
+          <ol class="embudo" id="usoEmbudo"></ol>
+        </article>
+        <article class="stat">
+          <h3>Dispositivos</h3>
+          <dl id="usoDispositivos"></dl>
+          <h3 class="sub">Navegadores</h3>
+          <dl id="usoNavegadores"></dl>
+          <h3 class="sub">Origen</h3>
+          <dl id="usoOrigenes"></dl>
+        </article>
+        <article class="stat">
+          <h3>Fricción</h3>
+          <dl id="usoFriccion"></dl>
+          <h3 class="sub">Campos que más fallan</h3>
+          <dl id="usoCampos"></dl>
+        </article>
+        <article class="stat">
+          <h3>Música</h3>
+          <dl id="usoMusica"></dl>
+          <h3 class="sub">Canciones más puestas</h3>
+          <dl id="usoPistas"></dl>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2>Últimos eventos</h2>
+      <p class="hint">Los 40 más recientes. "Quién" es el final del id de usuario o el inicio del id de sesión anónima.</p>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Cuándo</th><th>Evento</th><th>Detalle</th><th>Página</th><th>Dispositivo</th><th>Quién</th></tr></thead>
+        <tbody id="rowsEventos"></tbody>
+      </table></div>
+      <div class="status err" id="usoError" hidden></div>
+    </section>
     </div>
   </div>
 
