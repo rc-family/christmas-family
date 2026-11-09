@@ -5,6 +5,7 @@ import * as XLSX from 'xlsx';
 import { el, tarjetaFamilia } from '../lib/tarjeta';
 import { registrar, registrarVisita, usuarioEventos } from '../lib/eventos';
 import { resumirUso, etiquetaEvento, detalleTexto, type EventoRow, type ResumenUso, type Conteo } from '../lib/uso';
+import { emitirTotales } from '../lib/metricas';
 
 type Familia = FamiliaRow & { navidad_acompanantes: AcompananteRow[]; navidad_ninos: NinoRow[] };
 type Fila = (string | number)[];
@@ -209,6 +210,7 @@ async function cargar() {
     .order('updated_at', { ascending: false });
   if (error) throw error;
   render((data ?? []) as Familia[]);
+  void emitirTotales('admin');
 }
 
 /** Ancho de columna aproximado según el contenido más largo. */
@@ -276,11 +278,16 @@ $('xlsxBtn').addEventListener('click', () => {
   catch (e) { $('denied').hidden = false; $('denied').textContent = 'No se pudieron cargar las respuestas: ' + mensajeError(e); }
   cargarUso().catch((e) => { $('usoError').hidden = false; $('usoError').textContent = 'No se pudo cargar el uso: ' + mensajeError(e); });
 
-  // Actualización en vivo cuando llegan nuevas respuestas.
+  // Actualización en vivo. Un guardado produce varias notificaciones casi simultáneas (familia, niños,
+  // acompañantes); las agrupamos y recargamos una sola vez cuando ya terminaron.
+  let tRespuestas: ReturnType<typeof setTimeout> | undefined;
+  let tUso: ReturnType<typeof setTimeout> | undefined;
+  const recargarRespuestas = () => { clearTimeout(tRespuestas); tRespuestas = setTimeout(() => cargar().catch(() => {}), 600); };
+  const recargarUso = () => { clearTimeout(tUso); tUso = setTimeout(() => cargarUso().catch(() => {}), 600); };
   supabase.channel('navidad')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'navidad_familias' }, () => cargar().catch(() => {}))
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'navidad_ninos' }, () => cargar().catch(() => {}))
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'navidad_acompanantes' }, () => cargar().catch(() => {}))
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'navidad_eventos' }, () => cargarUso().catch(() => {}))
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'navidad_familias' }, recargarRespuestas)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'navidad_ninos' }, recargarRespuestas)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'navidad_acompanantes' }, recargarRespuestas)
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'navidad_eventos' }, recargarUso)
     .subscribe();
 })();

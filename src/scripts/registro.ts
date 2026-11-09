@@ -2,7 +2,8 @@ import { supabase, requireUser, isAdmin, signOut } from '../lib/supabase';
 import { edadAlCompartir } from '../lib/edad';
 import { tarjetaFamilia } from '../lib/tarjeta';
 import { registrar, registrarVisita, usuarioEventos } from '../lib/eventos';
-import type { Asiste, Sexo, AcompananteRow, NinoRow } from '../lib/database.types';
+import { contarGuardado, emitirTotales } from '../lib/metricas';
+import type { Asiste, AcompananteRow, NinoRow } from '../lib/database.types';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -178,38 +179,21 @@ function mostrarFormulario(agregar?: 'nino' | 'adulto') {
 
 /* ---------- Datos ---------- */
 
-/** Guarda: upsert de la familia y reemplazo completo de acompañantes y niños. */
-async function guardar(userId: string, email: string, d: Respuesta) {
-  const { data: fam, error: e1 } = await supabase
-    .from('navidad_familias')
-    .upsert({
-      user_id: userId, email,
-      nombre: d.nombre, parentesco: d.parentesco, celular: d.celular,
-      asiste: d.asiste as Asiste, ayuda: d.ayuda, comentarios: d.comentarios || null,
-    }, { onConflict: 'user_id' })
-    .select('id')
-    .single();
-  if (e1 || !fam) throw e1 ?? new Error('No se pudo guardar la familia');
-
-  const fid = fam.id;
-  const [{ error: e2 }, { error: e3 }] = await Promise.all([
-    supabase.from('navidad_acompanantes').delete().eq('familia_id', fid),
-    supabase.from('navidad_ninos').delete().eq('familia_id', fid),
-  ]);
-  if (e2 || e3) throw e2 ?? e3;
-
-  if (d.acompanantes.length) {
-    const { error } = await supabase.from('navidad_acompanantes').insert(
-      d.acompanantes.map((a, i) => ({ familia_id: fid, nombre: a.nombre, relacion: a.relacion, celular: a.celular || null, restricciones: a.restricciones || null, orden: i })),
-    );
-    if (error) throw error;
-  }
-  if (d.ninos.length) {
-    const { error } = await supabase.from('navidad_ninos').insert(
-      d.ninos.map((n, i) => ({ familia_id: fid, nombre: n.nombre, fecha_nacimiento: n.fecha, sexo: n.sexo as Sexo, intereses: n.intereses || null, alergias: n.alergias || null, orden: i })),
-    );
-    if (error) throw error;
-  }
+/**
+ * Guarda todo en una sola transacción (función navidad_guardar_respuesta): familia, acompañantes y niños.
+ * Así nadie (ni el panel en vivo) ve un estado intermedio con niños borrados y aún no reinsertados.
+ */
+async function guardar(_userId: string, email: string, d: Respuesta) {
+  const { error } = await supabase.rpc('navidad_guardar_respuesta', {
+    p_email: email,
+    p_datos: {
+      nombre: d.nombre, parentesco: d.parentesco, celular: d.celular, asiste: d.asiste,
+      ayuda: d.ayuda, comentarios: d.comentarios || null,
+      acompanantes: d.acompanantes.map((a) => ({ nombre: a.nombre, relacion: a.relacion, celular: a.celular || null, restricciones: a.restricciones || null })),
+      ninos: d.ninos.map((n) => ({ nombre: n.nombre, fecha_nacimiento: n.fecha, sexo: n.sexo, intereses: n.intereses || null, alergias: n.alergias || null })),
+    },
+  });
+  if (error) throw error;
 }
 
 /** Lee el registro previo del usuario, si existe. */
@@ -253,6 +237,11 @@ async function cargar(userId: string): Promise<Respuesta | null> {
         nuevo: esNuevo, asiste: d.asiste, ninos: d.ninos.length, acompanantes: d.acompanantes.length,
         segundos: inicioFormulario ? Math.round((Date.now() - inicioFormulario) / 1000) : null,
       });
+      contarGuardado({
+        nuevo: esNuevo, asiste: d.asiste, adultos: 1 + d.acompanantes.length,
+        ninos: d.ninos.filter((n) => n.sexo === 'Niño').length, ninas: d.ninos.filter((n) => n.sexo === 'Niña').length,
+      });
+      void emitirTotales('registro');
       guardada = d;
       poblar(d);
       mostrarConfirmacion(d);

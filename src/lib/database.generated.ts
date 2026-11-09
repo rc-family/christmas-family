@@ -183,7 +183,9 @@ export type Database = {
     }
     Functions: {
       navidad_es_mi_familia: { Args: { fid: string }; Returns: boolean }
+      navidad_guardar_respuesta: { Args: { p_email: string; p_datos: Json }; Returns: string }
       navidad_is_admin: { Args: never; Returns: boolean }
+      navidad_totales: { Args: never; Returns: Json }
       navidad_uid: { Args: never; Returns: string }
     }
     Enums: {

@@ -133,6 +133,20 @@ Para compilar a mano: `npm run build` genera `dist/` estático; `SITE_URL` y `BA
 
 ## Monitoreo con Sentry
 
+### Métricas (Application Metrics)
+
+- El guardado del registro usa la función `navidad_guardar_respuesta()` (migración
+  `20261110_navidad_guardar_respuesta.sql`), que escribe familia, acompañantes y niños en una sola transacción;
+  así los totales nunca se leen a medias.
+- `src/lib/metricas.ts` envía gauges con el estado actual del registro tras cada guardado y al abrir el
+  panel: `registro.adultos` (atributo `tipo`: total, padre_madre, acompanante), `registro.ninos` (atributo
+  `sexo`: total, nino, nina) y `registro.familias` (atributo `asiste`). Los totales salen de la función
+  `navidad_totales()` (migración `20261110_navidad_totales.sql`), que devuelve solo conteos.
+- Counters por acción: `registro.guardado` (atributos `nuevo`, `asiste`), `registro.guardado.adultos` y
+  `registro.guardado.ninos` (atributo `sexo`).
+- Se ven en Sentry → Explore → Metrics, filtrando por `sentry.environment:production`.
+
+
 - Proyecto `christmas-family` en la organización `mobitec-ca` (plataforma Astro / navegador).
 - `sentry.client.config.ts` inicializa el SDK con errores, trazas de rendimiento y grabación de sesión
   (textos enmascarados). Toma el DSN de `PUBLIC_SENTRY_DSN`; sin DSN no envía nada.
