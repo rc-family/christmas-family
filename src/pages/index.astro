@@ -1,30 +1,107 @@
 ---
 import Base from '../layouts/Base.astro';
-import DatosCompartir from '../components/DatosCompartir.astro';
-import Contacto from '../components/Contacto.astro';
----
-<Base title="Ingresar · Compartir navideño">
-  <header class="top compact centrado">
-    <span class="eyebrow">Están cordialmente invitados</span>
-    <h1>Compartir navideño de la familia</h1>
-    <p class="lead">Como cada año, nos reunimos en familia para una noche de buena comida, risas y recuerdos. Cuéntanos quiénes vienen para preparar todo con cariño.</p>
-    <DatosCompartir />
-  </header>
+import Encabezado from '../components/Encabezado.astro';
+import TarjetasDatos from '../components/TarjetasDatos.astro';
+import Pie from '../components/Pie.astro';
+import { CONTACTO } from '../lib/edad';
+import { ruta } from '../lib/rutas';
+import { FOTOS, urlFoto } from '../lib/fotos';
+import '../styles/portada.css';
 
-  <div class="login" id="login">
-    <div class="loading" id="checking">Revisando tu sesión...</div>
-    <div class="status err" id="noKey" hidden>
-      Falta configurar la autenticación: agrega <code>PUBLIC_CLERK_PUBLISHABLE_KEY</code> al archivo <code>.env</code> y reinicia el servidor.
+/** Tema de la portada: true = hoja clara sobre fondo verde con nieve (como el resto del sitio); false = todo crema. */
+const NOCHE = true;
+const wa = CONTACTO.celular
+  ? `https://wa.me/${CONTACTO.celular}?text=${encodeURIComponent('Hola, tengo un problema con el registro del compartir navideño.')}`
+  : '';
+---
+<Base title="Compartir navideño de la familia Crispín" portada noche={NOCHE}>
+  <div class="hoja-portada">
+  <Encabezado pagina="inicio" />
+
+  <main class="portada-main">
+    <div class="subbarra" aria-hidden="true">
+      <span><b>Convocatoria familiar</b> <i>•</i> Edición diciembre 2026</span>
+      <span class="oro">✦ Una noche para estar juntos</span>
     </div>
-    <section id="signin" hidden>
-      <h2><span class="n">01</span> Ingresa con tu correo</h2>
-      <p class="hint">Te enviamos un código de 6 dígitos, sin contraseñas. Si es tu primera vez, la cuenta se crea sola.</p>
-      <div id="clerkSignIn"></div>
-    </section>
-    <Contacto />
+
+    <div class="portada-grid">
+      <section class="hero">
+        <span class="chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg> Están cordialmente invitados</span>
+        <h1>Compartir navideño <em>de la familia Crispín</em></h1>
+        <div class="divisor" aria-hidden="true"><i></i><span>★</span><i></i></div>
+        <p class="lead">Como cada año, nos reunimos en familia para una noche de buena comida, risas y recuerdos. Cuéntanos quiénes vienen para preparar todo con cariño.</p>
+      </section>
+
+      <section class="detalles" id="detalles" aria-labelledby="detallesTitulo">
+        <h2 class="detalles-titulo" id="detallesTitulo">Detalles de la reunión <span class="corazon" aria-hidden="true">♥</span></h2>
+        <TarjetasDatos />
+      </section>
+
+      <figure class="foto" id="slider" aria-roledescription="carrusel" aria-label="Fotos del compartir">
+        {FOTOS.map((f, i) => (
+          <div class:list={['slide', { activa: i === 0 }]} role="group" aria-roledescription="diapositiva" aria-label={`Foto ${i + 1} de ${FOTOS.length}`} aria-hidden={i !== 0}>
+            <img src={urlFoto(f)} alt={f.alt} width="1600" height="1200" loading={i === 0 ? 'eager' : 'lazy'} decoding="async" fetchpriority={i === 0 ? 'high' : undefined} />
+            <figcaption>
+              <span class="cap-desk"><strong>{f.titulo}</strong><small>{f.nota}</small></span>
+              <span class="cap-mov">«La Navidad no es un momento, es la alegría de estar juntos.»</span>
+            </figcaption>
+          </div>
+        ))}
+        {FOTOS.length > 1 && (
+          <>
+            <button type="button" class="sl-btn prev" aria-label="Foto anterior">‹</button>
+            <button type="button" class="sl-btn next" aria-label="Foto siguiente">›</button>
+            <div class="sl-dots" role="group" aria-label="Elegir foto">
+              {FOTOS.map((f, i) => <button type="button" aria-label={`Ver ${f.titulo}`} aria-current={i === 0 ? 'true' : 'false'}></button>)}
+            </div>
+          </>
+        )}
+      </figure>
+
+      <aside class="columna">
+        <div class="login tarjeta" id="login">
+          <div class="tarjeta-top">
+            <span class="paso" id="loginPaso">Paso 01 de 02</span>
+            <span class="chip gris"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg> <span id="loginChip">Sin contraseña</span></span>
+          </div>
+          <div class="loading" id="checking">Revisando tu sesión...</div>
+          <div class="status err" id="noKey" hidden>
+            Falta configurar la autenticación: agrega <code>PUBLIC_CLERK_PUBLISHABLE_KEY</code> al archivo <code>.env</code> y reinicia el servidor.
+          </div>
+          <section id="signin" hidden>
+            <h2 id="loginTitulo">Ingresa con tu correo</h2>
+            <p class="hint" id="loginHint">Te enviamos un código de 6 dígitos a tu correo, sin contraseñas. Si es tu primera vez, la cuenta se crea sola.</p>
+            <p class="hint" id="loginHintCodigo" hidden>Introduce el código que enviamos a <strong id="loginCorreo"></strong> para confirmar tu participación. <button type="button" class="btn link" id="loginCambiar">Cambiar correo</button></p>
+            <div id="clerkSignIn"></div>
+            <p class="seguro"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Acceso seguro y sencillo, solo para la familia.</p>
+            <p class="seguridad" id="loginSeguridad" hidden><span>Seguridad del registro</span><span><i aria-hidden="true"></i> Conexión cifrada</span></p>
+          </section>
+        </div>
+
+        <div class="ayuda" id="ayuda">
+          <div class="ayuda-head">
+            <span class="ico verde" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 13a7 7 0 0 1 14 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="4" y="12" width="4" height="6" rx="1.5" fill="currentColor"/><rect x="16" y="12" width="4" height="6" rx="1.5" fill="currentColor"/><path d="M18 18c0 2-2 3-5 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+            <div><strong>¿Problemas con el código o el registro?</strong><small>Escríbele a {CONTACTO.nombre} y lo vemos contigo.</small></div>
+          </div>
+          {wa
+            ? <a class="btn wa-verde" href={wa} target="_blank" rel="noopener">Escríbele a {CONTACTO.nombre} por WhatsApp</a>
+            : <span class="btn wa-verde">Escríbele a {CONTACTO.nombre} por WhatsApp</span>}
+        </div>
+
+        <blockquote class="cita">
+          <span class="estrella" aria-hidden="true">✦</span>
+          <p>«La familia unida en la mesa es el regalo más preciado.»</p>
+          <cite>Navidad 2026</cite>
+        </blockquote>
+      </aside>
+    </div>
+  </main>
+
+  <Pie />
   </div>
 
   <script>
     import '../scripts/login';
+    import '../scripts/slider';
   </script>
 </Base>

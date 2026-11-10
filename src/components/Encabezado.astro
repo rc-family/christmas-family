@@ -1,0 +1,60 @@
+---
+/** Encabezado de la portada y del registro: marca, menú, reproductor y la ventana de detalles. */
+import Musica from './Musica.astro';
+import TarjetasDatos from './TarjetasDatos.astro';
+import { ruta } from '../lib/rutas';
+interface Props { pagina: 'inicio' | 'registro' }
+const { pagina } = Astro.props;
+---
+<header class="barra">
+  <a class="marca" href={ruta('/')}>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20 8 9l7 7Zm9-11 2-2m1 5 3-1M11 5l1-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="18" cy="5" r="1.2" fill="currentColor"/><circle cx="20" cy="9.5" r="1" fill="currentColor"/></svg>
+    <span><b>Familia Crispín</b><small>Navidad 2026 <i>•</i> Compartir</small></span>
+  </a>
+  <nav class="enlaces" aria-label="Secciones">
+    <a href={ruta('/')} aria-current={pagina === 'inicio' ? 'page' : undefined}>{pagina === 'inicio' ? 'Inicio y registro' : 'Inicio'}</a>
+    <a href={pagina === 'inicio' ? '#detalles' : ruta('/#detalles')} id="detallesBtn" aria-haspopup="dialog" aria-controls="detallesModal">Detalles</a>
+    {/* En la portada solo aparece con sesión (lo decide scripts/login.ts) */}
+    <a href={ruta('/registro')} id="miRegistroLink" aria-current={pagina === 'registro' ? 'page' : undefined} hidden={pagina === 'inicio'}>Mi registro</a>
+    {/* Solo organizadores: lo muestra scripts/registro.ts si el rol es admin */}
+    {pagina === 'registro' && <a href={ruta('/admin')} id="adminLink" data-admin hidden>Ver respuestas</a>}
+  </nav>
+  <Musica barra />
+  {pagina === 'inicio' && (
+    <a class="usuario" id="usuarioBtn" href={ruta('/registro')} aria-label="Mi registro" title="Mi registro" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 19.5c1.2-3.3 3.8-5 7-5s5.8 1.7 7 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </a>
+  )}
+  {pagina === 'registro' && (
+    <div class="usuario-menu">
+      <button type="button" class="usuario" id="usuarioMenuBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="usuarioMenu" aria-label="Menú de tu cuenta">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 19.5c1.2-3.3 3.8-5 7-5s5.8 1.7 7 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <div class="usuario-panel" id="usuarioMenu" role="menu" hidden>
+        <div class="usuario-info">
+          <small>Sesión iniciada</small>
+          <strong id="userEmail">...</strong>
+        </div>
+        <a href={ruta('/admin')} role="menuitem" class="usuario-item solo-angosto" data-admin hidden>Ver respuestas</a>
+        <button type="button" role="menuitem" class="usuario-item salir" id="logoutBtn">Salir</button>
+      </div>
+    </div>
+  )}
+</header>
+
+<dialog class="modal-detalles" id="detallesModal" aria-labelledby="detallesModalTitulo">
+  <div class="modal-cab">
+    <div>
+      <span class="modal-eyebrow">Compartir navideño 2026</span>
+      <h2 id="detallesModalTitulo">Detalles de la reunión</h2>
+    </div>
+    <button type="button" class="modal-cerrar" id="detallesCerrar" aria-label="Cerrar">×</button>
+  </div>
+  <TarjetasDatos modal />
+  <button type="button" class="btn modal-ok" id="detallesOk">Entendido</button>
+</dialog>
+
+<script>
+  import '../scripts/detalles';
+  import '../scripts/menu-usuario';
+</script>

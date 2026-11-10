@@ -144,6 +144,10 @@ form.addEventListener('change', (e) => { const f = (e.target as HTMLElement).clo
  */
 function validate(d: Respuesta): string {
   limpiarErrores();
+  // Si falta algo de la sección 01, se despliega para que se vea el campo marcado
+  if (!d.nombre || !d.parentesco || !d.celular || !d.asiste) plegar01(false);
+  if (d.acompanantes.some((a) => !a.nombre || !a.relacion)) plegar02(false);
+  if (d.ninos.some((n) => !n.nombre || !n.fecha || !n.sexo)) plegar03(false);
   const faltan: string[] = [];
   const pendientes: HTMLElement[] = [];
   if (!d.nombre) { faltan.push('nombre'); pendientes.push(marcar($('p_nombre'), 'Escribe tu nombre completo.')); }
@@ -169,6 +173,102 @@ function validate(d: Respuesta): string {
   const n = pendientes.length;
   return n === 1 ? 'Falta un dato: revisa el campo marcado.' : `Faltan ${n} datos: revisa los campos marcados.`;
 }
+
+/* ---------- Sección 01 plegable ---------- */
+
+/**
+ * Tras elegir la asistencia (con nombre, parentesco y celular completos), la sección 01 se resume
+ * en una línea para dejar a la vista acompañantes y niños. "Editar" la vuelve a abrir.
+ */
+const ASISTE_TEXTO: Record<string, string> = { 'Sí': 'Sí, vamos', 'Por confirmar': 'Por confirmar', 'No': 'No podremos' };
+function plegar01(plegar: boolean) {
+  const d = readForm();
+  const completo = !!(d.nombre && d.parentesco && d.celular && d.asiste);
+  const si = plegar && completo;
+  $('cuerpo01').hidden = si;
+  $('resumen01').hidden = !si;
+  $('sec01').classList.toggle('plegada', si);
+  $('editar01').setAttribute('aria-expanded', String(!si));
+  actualizarPlegar01(si, completo);
+  if (si) {
+    $('r01Nombre').textContent = d.nombre;
+    $('r01Datos').textContent = `${d.parentesco} · ${d.celular}`;
+    const a = $('r01Asiste');
+    a.textContent = ASISTE_TEXTO[d.asiste] ?? d.asiste;
+    a.dataset.asiste = d.asiste;
+  }
+  return si;
+}
+// Solo un clic o toque en la asistencia pliega la sección. Con teclado, las flechas cambian la
+// opción (y disparan change), así que no se pliega: se hace con el botón de la cabecera.
+let asistePorPuntero = false;
+document.querySelectorAll<HTMLInputElement>('input[name="p_asiste"]').forEach((r) => {
+  r.closest('label')?.addEventListener('pointerdown', () => { asistePorPuntero = true; });
+  r.addEventListener('change', () => {
+    const plegar = asistePorPuntero;
+    asistePorPuntero = false;
+    actualizarPlegar01();
+    // El foco estaba en la opción, que se oculta: pasa a "Editar" sin mover la página
+    if (plegar && plegar01(true)) $('editar01').focus({ preventScroll: true });
+  });
+});
+document.addEventListener('keydown', () => { asistePorPuntero = false; });
+/** Flecha de la cabecera: aparece cuando los datos de la sección 01 están completos (para plegar o abrir). */
+function actualizarPlegar01(plegada: boolean = $('cuerpo01').hidden === true, completo?: boolean) {
+  if (completo === undefined) { const d = readForm(); completo = !!(d.nombre && d.parentesco && d.celular && d.asiste); }
+  const b = $('plegar01');
+  b.hidden = !completo;
+  b.classList.toggle('abrir', plegada);
+  b.setAttribute('aria-expanded', String(!plegada));
+  b.setAttribute('aria-label', plegada ? 'Abrir esta sección' : 'Plegar esta sección');
+  b.title = plegada ? 'Abrir' : 'Plegar';
+}
+$('cuerpo01').addEventListener('input', () => actualizarPlegar01());
+$('plegar01').addEventListener('click', () => {
+  if ($('cuerpo01').hidden) { plegar01(false); $('p_nombre').focus(); }
+  else if (plegar01(true)) $('plegar01').focus({ preventScroll: true });
+});
+$('editar01').addEventListener('click', () => {
+  plegar01(false);
+  $('p_nombre').focus();
+});
+
+/* ---------- Secciones 02 y 03 plegables ---------- */
+
+/**
+ * Con al menos un bloque (acompañante o niño) aparece la flecha en la cabecera de la sección;
+ * plegada, la sección muestra solo una línea con quiénes vienen. Si se quita el último, se abre.
+ */
+function seccionPlegable(n: '02' | '03', lista: HTMLElement, resumen: () => string) {
+  const cuerpo = $('cuerpo' + n), res = $('resumen' + n), btn = $('plegar' + n), sec = $('sec' + n);
+  const plegar = (si0: boolean) => {
+    const hay = lista.children.length > 0;
+    const si = si0 && hay;
+    cuerpo.hidden = si;
+    res.hidden = !si;
+    if (si) res.textContent = resumen();
+    btn.hidden = !hay;
+    btn.classList.toggle('abrir', si);
+    btn.setAttribute('aria-expanded', String(!si));
+    btn.setAttribute('aria-label', si ? 'Abrir esta sección' : 'Plegar esta sección');
+    btn.title = si ? 'Abrir' : 'Plegar';
+    sec.classList.toggle('plegada', si);
+  };
+  btn.addEventListener('click', () => { plegar(cuerpo.hidden !== true); btn.focus({ preventScroll: true }); });
+  new MutationObserver(() => plegar(cuerpo.hidden === true)).observe(lista, { childList: true });
+  return plegar;
+}
+
+const plegar02 = seccionPlegable('02', adults, () => {
+  const nombres = readForm().acompanantes.map((a) => a.nombre || 'Sin nombre');
+  return `${plural(nombres.length, 'acompañante', 'acompañantes')}: ${nombres.join(', ')}`;
+});
+const plegar03 = seccionPlegable('03', kids, () => {
+  const ninos = readForm().ninos;
+  const todasNinas = ninos.every((k) => k.sexo === 'Niña');
+  const nombres = ninos.map((k) => (k.nombre || 'Sin nombre') + (k.edad ? ` (${k.edad})` : ''));
+  return `${plural(ninos.length, todasNinas ? 'niña' : 'niño', todasNinas ? 'niñas' : 'niños')}: ${nombres.join(', ')}`;
+});
 
 /* ---------- Resumen en vivo antes de enviar ---------- */
 
@@ -229,6 +329,10 @@ function mostrarFormulario(agregar?: 'nino' | 'adulto') {
   form.hidden = false;
   inicioFormulario = Date.now();
   limpiarErrores();
+  // Al editar una respuesta ya guardada, la sección 01 empieza resumida
+  plegar01(!!guardada);
+  plegar02(!!guardada && agregar !== 'adulto');
+  plegar03(!!guardada && agregar !== 'nino');
   actualizarResumen();
   registrar(agregar === 'nino' ? 'agrego_nino' : agregar === 'adulto' ? 'agrego_acompanante' : guardada ? 'edito' : 'vio_formulario');
   $('submit').textContent = guardada ? 'Guardar cambios' : 'Enviar respuesta';
@@ -283,7 +387,8 @@ async function cargar(userId: string): Promise<Respuesta | null> {
   usuarioEventos(user.id);
   registrarVisita();
   $('userEmail').textContent = user.email;
-  isAdmin().then((ok) => { if (ok) $('adminLink').hidden = false; });
+  // "Ver respuestas" en el menú (escritorio) y en el menú de la cuenta (móvil)
+  isAdmin().then((ok) => { if (ok) document.querySelectorAll<HTMLElement>('[data-admin]').forEach((el) => { el.hidden = false; }); });
 
   /** Valida, guarda y pasa a la confirmación. Devuelve false si falló. */
   async function enviar(d: Respuesta, status: HTMLElement, botones: HTMLButtonElement[]) {

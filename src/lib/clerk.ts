@@ -6,6 +6,13 @@ import { ruta } from './rutas';
 const key = import.meta.env.PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 export const clerk = key ? new Clerk(key) : null;
+
+/** Textos en español con pequeños ajustes sobre la traducción oficial. */
+const localization = {
+  ...esES,
+  signIn: { ...esES.signIn, emailCode: { ...esES.signIn?.emailCode, resendButton: 'Reenviar código' } },
+  signUp: { ...esES.signUp, emailCode: { ...esES.signUp?.emailCode, resendButton: 'Reenviar código' } },
+};
 // Solo en desarrollo: acceso desde la consola para depurar el token.
 if (import.meta.env.DEV && clerk) (window as unknown as { __clerk: Clerk }).__clerk = clerk;
 let loading: Promise<Clerk | null> | null = null;
@@ -15,7 +22,7 @@ export function loadClerk(): Promise<Clerk | null> {
   if (!clerk) return Promise.resolve(null);
   // clerk-js v6 no incluye la interfaz: se pasa el paquete @clerk/ui empaquetado con la app.
   loading ??= clerk
-    .load({ ui, localization: esES, signInUrl: ruta('/'), signUpUrl: ruta('/'), afterSignOutUrl: ruta('/') })
+    .load({ ui, localization, signInUrl: ruta('/'), signUpUrl: ruta('/'), afterSignOutUrl: ruta('/') })
     .then(() => clerk);
   return loading;
 }
@@ -73,5 +80,19 @@ export const aparienciaClerk = {
     footer: { display: 'none' },
     header: { display: 'none' },
     formButtonPrimary: { fontWeight: '700', fontSize: '15px', padding: '12px 18px' },
+  },
+};
+
+/** Variante para la portada: el formulario va dentro de una tarjeta blanca, sin borde ni relleno propios. */
+export const aparienciaPortada = {
+  variables: { ...aparienciaClerk.variables, colorBackground: '#ffffff', colorInputBackground: '#f4f1eb' },
+  elements: {
+    ...aparienciaClerk.elements,
+    // Sin overflow oculto: el borde de los campos es una sombra de 1px y el foco un anillo exterior,
+    // y sin relleno quedaban cortados en los extremos.
+    cardBox: { width: '100%', maxWidth: 'none', boxShadow: 'none', border: 'none', borderRadius: '0', overflow: 'visible' },
+    card: { padding: '0', boxShadow: 'none', background: 'transparent', overflow: 'visible' },
+    main: { overflow: 'visible' },
+    form: { overflow: 'visible' },
   },
 };

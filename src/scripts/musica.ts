@@ -35,6 +35,9 @@ function iniciar() {
   const interprete = req<HTMLElement>('mInterprete');
   const lista = req<HTMLOListElement>('mLista');
   const aviso = req<HTMLElement>('mAviso');
+  // Opcionales: solo existen en la presentación de barra (portada)
+  const tituloBtn = document.getElementById('mTituloBtn');
+  const play2 = document.getElementById('mPlay2');
 
   const estado: Estado = leer();
   let pendiente = false; // quería sonar pero el navegador bloqueó el autoplay
@@ -86,6 +89,14 @@ function iniciar() {
     mute.setAttribute('aria-pressed', String(estado.mute));
     vol.value = String(Math.round(estado.vol * 100));
     btn.classList.toggle('sonando', sonando && !estado.mute);
+    if (tituloBtn) tituloBtn.textContent = p.titulo;
+    if (play2) {
+      play2.classList.toggle('sonando', sonando);
+      play2.setAttribute('aria-label', sonando ? 'Pausar' : 'Reproducir');
+      const ico = play2.querySelector('.m-ico'), txt = play2.querySelector('.m-txt2');
+      if (ico) ico.textContent = sonando ? '❚❚' : '▶';
+      if (txt) txt.textContent = sonando ? 'Pausar' : 'Reproducir';
+    }
     btn.setAttribute('aria-label', sonando ? 'Música: sonando. Abrir reproductor' : 'Abrir reproductor de música');
     lista.querySelectorAll<HTMLButtonElement>('.m-pista').forEach((b, idx) => {
       b.classList.toggle('activa', idx === estado.i);
@@ -138,7 +149,9 @@ function iniciar() {
 
   // Controles
   btn.addEventListener('click', () => { if (panel.hidden) registrar('musica_abrio'); abrir(panel.hidden === true); });
-  play.addEventListener('click', () => { if (audio.paused) { registrar('musica_play', { pista: PISTAS[estado.i].titulo }); void reproducir(); } else pausar(); });
+  const alternar = () => { if (audio.paused) { registrar('musica_play', { pista: PISTAS[estado.i].titulo }); void reproducir(); } else pausar(); };
+  play.addEventListener('click', alternar);
+  play2?.addEventListener('click', alternar);
   prev.addEventListener('click', () => { cargar(estado.i - 1, estado.sonando || !audio.paused); registrar('musica_cambio', { pista: PISTAS[estado.i].titulo }); });
   next.addEventListener('click', () => { cargar(estado.i + 1, estado.sonando || !audio.paused); registrar('musica_cambio', { pista: PISTAS[estado.i].titulo }); });
   mute.addEventListener('click', () => {

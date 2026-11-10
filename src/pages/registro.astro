@@ -1,143 +1,198 @@
 ---
 import Base from '../layouts/Base.astro';
 import { FECHA_COMPARTIR_ISO, DATOS_COMPARTIR, CONTACTO } from '../lib/edad';
-import DatosCompartir from '../components/DatosCompartir.astro';
+import Encabezado from '../components/Encabezado.astro';
+import Pie from '../components/Pie.astro';
+import '../styles/portada.css';
 import { ruta } from '../lib/rutas';
 import Contacto from '../components/Contacto.astro';
 ---
-<Base title="Registro · Compartir navideño">
-  <div class="userbar">
-    <span>Sesión: <strong id="userEmail">...</strong></span>
-    <span class="links">
-      <a href={ruta('/admin')} id="adminLink" hidden>Ver respuestas</a>
-      <button type="button" class="btn link" id="logoutBtn">Salir</button>
-    </span>
-  </div>
-  <header class="top compact">
-    <h1>Compartir navideño de la familia</h1>
-    <p class="lead">Cuéntanos quiénes vienen para preparar los regalos y juegos de los niños. Toma 2 minutos.</p>
-    <DatosCompartir />
-  </header>
+<Base title="Registro · Compartir navideño de la familia Crispín" portada noche>
+  <div class="hoja-portada estrecha">
+  <Encabezado pagina="registro" />
 
-  <div class="loading" id="loading">Cargando tu registro...</div>
-
-  <div id="cerrado" hidden>
-    <section class="gracias">
-      <div class="check no" aria-hidden="true">–</div>
-      <h2>El registro ya cerró</h2>
-      <p class="lead">Recibimos respuestas hasta el {DATOS_COMPARTIR.limite.toLowerCase()}. Si aún quieres sumarte o avisar algo, escríbele a {CONTACTO.nombre} por WhatsApp y lo vemos contigo.</p>
-    </section>
-  </div>
-
-  <form id="form" novalidate hidden>
-    <section>
-      <h2><span class="n">01</span> Persona responsable del registro</h2>
-      <p class="hint">Puede ser papá, mamá, abuelo, tío o quien venga a cargo. <strong>Una sola respuesta por familia</strong>: quien la envíe registra a todos los adultos y niños que vienen juntos.</p>
-      <div class="grid">
-        <label class="f full">Nombre completo <span class="req">*</span>
-          <input id="p_nombre" name="p_nombre" required autocomplete="name" placeholder="Ej. Eladio Requena" />
-        </label>
-        <label class="f">Parentesco con la familia <span class="req">*</span>
-          <input id="p_parentesco" name="p_parentesco" required placeholder="Ej. hija de Rosa, sobrino de Luis" />
-        </label>
-        <label class="f">Celular / WhatsApp <span class="req">*</span>
-          <input id="p_celular" name="p_celular" required inputmode="tel" autocomplete="tel" placeholder="9XX XXX XXX" />
-        </label>
-        <div class="f full">
-          <span class="lbl">¿Asistirán al compartir? <span class="req">*</span></span>
-          <div class="chips">
-            <label><input type="radio" name="p_asiste" value="Sí" />Sí, vamos</label>
-            <label><input type="radio" name="p_asiste" value="Por confirmar" />Por confirmar</label>
-            <label><input type="radio" name="p_asiste" value="No" />No podremos</label>
-          </div>
-        </div>
+  <main class="registro-main">
+    <div class="reg-intro">
+      <div>
+        <span class="reg-eyebrow">✦ Compartir navideño 2026 <i>•</i> Lima</span>
+        <h1>Registro de participantes</h1>
       </div>
-    </section>
-
-    <section>
-      <h2><span class="n">02</span> Acompañantes adultos</h2>
-      <p class="hint">Pareja, abuelos u otro adulto que venga contigo. Sirve para calcular la comida. Opcional.</p>
-      <div id="adults"></div>
-      <button type="button" class="btn ghost" id="addAdult">+ Agregar acompañante</button>
-    </section>
-
-    <section>
-      <h2><span class="n">03</span> Los niños</h2>
-      <p class="hint">Si vienen niños contigo, agrega un bloque por cada uno. La edad se calcula sola al 5 de diciembre. Opcional.</p>
-      <div id="kids"></div>
-      <button type="button" class="btn ghost" id="addKid">+ Agregar niño</button>
-    </section>
-
-    <section>
-      <h2><span class="n">04</span> Para cerrar</h2>
-      <div class="grid">
-        <div class="f full">
-          <span class="lbl">¿Puedes ayudar con algo? <span class="opt">(opcional)</span></span>
-          <div class="chips">
-            <label><input type="checkbox" name="ayuda" value="Comida" />Comida</label>
-            <label><input type="checkbox" name="ayuda" value="Decoración" />Decoración</label>
-            <label><input type="checkbox" name="ayuda" value="Juegos" />Juegos</label>
-            <label><input type="checkbox" name="ayuda" value="Papá Noel" />Papá Noel</label>
-            <label><input type="checkbox" name="ayuda" value="Música" />Música</label>
-          </div>
-        </div>
-        <label class="f full">Comentarios <span class="opt">(opcional)</span>
-          <textarea id="p_comentarios" name="p_comentarios" placeholder="Algo más que debamos saber"></textarea>
-        </label>
-      </div>
-    </section>
-
-    <p class="resumen-envio" id="resumenEnvio" aria-live="polite"></p>
-    <p class="privacidad">Solo los organizadores ven estos datos. Los usamos para preparar la comida, los juegos y los regalos de los niños, y los borraremos después del compartir, antes de fin de año.</p>
-
-    <div class="actions">
-      <button type="submit" class="btn" id="submit">Enviar respuesta</button>
-      <button type="button" class="btn link" id="backBtn" hidden>Volver sin guardar cambios</button>
-      <div class="status" id="status"></div>
+      <ul class="reg-fechas">
+        <li><small>Cuándo</small><b>{DATOS_COMPARTIR.fecha}</b></li>
+        <li class="plazo"><small>Plazo</small><b>{DATOS_COMPARTIR.limite}</b></li>
+      </ul>
     </div>
-  </form>
 
-  <div id="confirm" hidden>
-    <section class="gracias">
-      <div class="check" id="cIcono" aria-hidden="true">✓</div>
-      <h2 id="cTitulo">¡Gracias por registrarte!</h2>
-      <p class="lead" id="cLead">Tu respuesta quedó guardada.</p>
-    </section>
+    <div class="loading" id="loading">Cargando tu registro...</div>
 
-    <section>
-      <h2>Lo que registraste</h2>
-      <div id="cTarjeta"></div>
-    </section>
+    <div id="cerrado" hidden>
+      <section class="bloque gracias">
+        <div class="check no" aria-hidden="true">–</div>
+        <h2>El registro ya cerró</h2>
+        <p class="lead">Recibimos respuestas hasta el {DATOS_COMPARTIR.limite.toLowerCase()}. Si aún quieres sumarte o avisar algo, escríbele a {CONTACTO.nombre} por WhatsApp y lo vemos contigo.</p>
+      </section>
+    </div>
 
-    <section>
-      <h2>¿Algo cambió?</h2>
-      <p class="hint" id="cHintAbierto">Puedes actualizar tu respuesta cuantas veces quieras hasta el {DATOS_COMPARTIR.limite.toLowerCase()}. Después de esa fecha, avísale a {CONTACTO.nombre} por WhatsApp.</p>
-      <p class="aviso" id="cHintCerrado" hidden>El registro cerró el {DATOS_COMPARTIR.limite.toLowerCase()}. Tu respuesta quedó guardada tal como la ves arriba; si necesitas cambiar algo, escríbele a {CONTACTO.nombre} por WhatsApp.</p>
-      <div class="opciones" id="cOpciones">
-        <button type="button" class="btn ghost" id="btnAddKid">+ Agregar un niño</button>
-        <button type="button" class="btn ghost" id="btnAddAdult">+ Agregar acompañante</button>
-        <button type="button" class="btn ghost" id="btnEdit">Editar mi respuesta</button>
-        <button type="button" class="btn ghost danger" id="btnCancel">Cancelar mi participación</button>
-        <button type="button" class="btn" id="btnReconfirm" hidden>Sí, después de todo vamos</button>
-      </div>
-      <div class="aviso" id="cancelBox" hidden>
-        <p><strong>¿Seguro que no podrán venir?</strong> Guardaremos tu respuesta como "No podremos". Tus datos se conservan por si cambias de opinión.</p>
-        <div class="opciones">
-          <button type="button" class="btn" id="cancelYes">Sí, no podremos ir</button>
-          <button type="button" class="btn ghost" id="cancelNo">Volver</button>
+    <form id="form" novalidate hidden>
+      <section class="bloque" id="sec01">
+        <div class="bloque-cab">
+          <span class="num">01</span>
+          <div><h2>Persona responsable del registro</h2><small>Cuéntanos quién eres</small></div>
+          <span class="etiqueta"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 11v5M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Obligatorio</span>
+          <button type="button" class="plegar" id="plegar01" aria-controls="cuerpo01" aria-expanded="true" aria-label="Plegar esta sección" title="Plegar" hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 15 6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+        <div class="resumen-01" id="resumen01" hidden>
+          <div class="r01-txt"><strong id="r01Nombre"></strong><span id="r01Datos"></span></div>
+          <span class="r01-asiste" id="r01Asiste"></span>
+          <button type="button" class="btn link" id="editar01" aria-controls="cuerpo01" aria-expanded="false">Editar</button>
+        </div>
+        <div class="cuerpo-01" id="cuerpo01">
+        <p class="hint">Puede ser papá, mamá, abuelo, tío o quien venga a cargo. <strong>Una sola respuesta por familia</strong>: quien la envíe registra a todos los adultos y niños que vienen juntos.</p>
+        <div class="grid tres">
+          <label class="f">Nombre completo <span class="req">*</span>
+            <input id="p_nombre" name="p_nombre" required autocomplete="name" placeholder="Ej. Eladio Requena" />
+          </label>
+          <label class="f">Parentesco con la familia <span class="req">*</span>
+            <input id="p_parentesco" name="p_parentesco" required placeholder="Ej. hija de Rosa, sobrino de Luis" />
+          </label>
+          <label class="f">Celular / WhatsApp <span class="req">*</span>
+            <input id="p_celular" name="p_celular" required inputmode="tel" autocomplete="tel" placeholder="9XX XXX XXX" />
+          </label>
+          <div class="f full asistencia">
+            <div class="asis-txt">
+              <span class="lbl">¿Asistirán al compartir? <span class="req">*</span></span>
+              <small>Si aún no lo saben, elige "Por confirmar" y lo cambias después.</small>
+            </div>
+            <div class="chips segmento">
+              <label><input type="radio" name="p_asiste" value="Sí" />Sí, vamos</label>
+              <label><input type="radio" name="p_asiste" value="Por confirmar" />Por confirmar</label>
+              <label><input type="radio" name="p_asiste" value="No" />No podremos</label>
+            </div>
+          </div>
+        </div>
+        </div>
+      </section>
+
+      <section class="bloque" id="sec02">
+        <div class="bloque-cab">
+          <span class="num">02</span>
+          <div><h2>Acompañantes adultos</h2><small>¿Quién viene contigo?</small></div>
+          <span class="etiqueta">Opcional</span>
+          <button type="button" class="plegar" id="plegar02" aria-controls="cuerpo02" aria-expanded="true" aria-label="Plegar esta sección" title="Plegar" hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 15 6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+        <p class="resumen-sec" id="resumen02" hidden></p>
+        <div id="cuerpo02">
+          <p class="hint">Tu herman@, padres, pareja o cualquier adulto que venga contigo.</p>
+          <div id="adults"></div>
+          <button type="button" class="btn agregar" id="addAdult">+ Agregar acompañante</button>
+        </div>
+      </section>
+
+      <section class="bloque" id="sec03">
+        <div class="bloque-cab">
+          <span class="num">03</span>
+          <div><h2>Los niños</h2><small>Los más pequeños de la familia</small></div>
+          <span class="etiqueta">Opcional</span>
+          <button type="button" class="plegar" id="plegar03" aria-controls="cuerpo03" aria-expanded="true" aria-label="Plegar esta sección" title="Plegar" hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 15 6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+        <p class="resumen-sec" id="resumen03" hidden></p>
+        <div id="cuerpo03">
+          <p class="hint">Si vienen niños contigo, agrega un bloque por cada uno.</p>
+          <div id="kids"></div>
+          <button type="button" class="btn agregar" id="addKid">+ Agregar niño</button>
+        </div>
+      </section>
+
+      <section class="bloque">
+        <div class="bloque-cab">
+          <span class="num">04</span>
+          <div><h2>Para cerrar</h2><small>Si quieres darnos una mano</small></div>
+          <span class="etiqueta">Opcional</span>
+        </div>
+        <div class="grid">
+          <div class="f full">
+            <span class="lbl">¿Puedes ayudar con algo? <span class="opt">(opcional)</span></span>
+            <div class="chips">
+              <label><input type="checkbox" name="ayuda" value="Comida" />Comida</label>
+              <label><input type="checkbox" name="ayuda" value="Decoración" />Decoración</label>
+              <label><input type="checkbox" name="ayuda" value="Juegos" />Juegos</label>
+              <label><input type="checkbox" name="ayuda" value="Papá Noel" />Papá Noel</label>
+              <label><input type="checkbox" name="ayuda" value="Música" />Música</label>
+            </div>
+          </div>
+          <label class="f full">Comentarios <span class="opt">(opcional)</span>
+            <textarea id="p_comentarios" name="p_comentarios" placeholder="Algo más que debamos saber"></textarea>
+          </label>
+        </div>
+      </section>
+
+      <div class="envio">
+        <span class="envio-ico" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="9" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="16.5" cy="10" r="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 19c.9-2.8 3-4.3 5.5-4.3s4.6 1.5 5.5 4.3M14.5 15.2c2.6-.5 4.8.8 5.8 3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+        <div class="envio-txt">
+          <strong>Resumen de tu registro</strong>
+          <p class="resumen-envio" id="resumenEnvio" aria-live="polite"></p>
+          <div class="status" id="status"></div>
+        </div>
+        <div class="envio-acciones">
+          <button type="submit" class="btn enviar" id="submit">Enviar respuesta</button>
+          <button type="button" class="btn link" id="backBtn" hidden>Volver sin guardar cambios</button>
         </div>
       </div>
-      <div class="status" id="cStatus"></div>
-    </section>
+      <p class="privacidad">Solo los organizadores ven estos datos. Los usamos para preparar la comida, los juegos y los regalos de los niños, y los borraremos después del compartir, antes de fin de año.</p>
+    </form>
 
+    <div id="confirm" hidden>
+      <section class="bloque confirmacion">
+        <div class="conf-cab">
+          <div class="check" id="cIcono" aria-hidden="true">✓</div>
+          <div>
+            <h2 id="cTitulo">¡Gracias por registrarte!</h2>
+            <p class="lead" id="cLead">Tu respuesta quedó guardada.</p>
+          </div>
+        </div>
+
+        <h3 class="conf-sub">Lo que registraste</h3>
+        <div id="cTarjeta"></div>
+
+        <div class="conf-cambios">
+          <h3 class="conf-sub">¿Algo cambió?</h3>
+          <p class="hint conf-hint" id="cHintAbierto">Puedes actualizar tu respuesta cuantas veces quieras hasta el {DATOS_COMPARTIR.limite.toLowerCase()}. Después de esa fecha, avísale a {CONTACTO.nombre} por WhatsApp.</p>
+          <p class="aviso" id="cHintCerrado" hidden>El registro cerró el {DATOS_COMPARTIR.limite.toLowerCase()}. Tu respuesta quedó guardada tal como la ves arriba; si necesitas cambiar algo, escríbele a {CONTACTO.nombre} por WhatsApp.</p>
+          <div class="opciones" id="cOpciones">
+            <button type="button" class="btn ghost" id="btnEdit">Editar mi respuesta</button>
+            <button type="button" class="btn ghost" id="btnAddAdult">+ Agregar acompañante</button>
+            <button type="button" class="btn ghost" id="btnAddKid">+ Agregar un niño</button>
+            <button type="button" class="btn ghost danger" id="btnCancel">Cancelar mi participación</button>
+            <button type="button" class="btn" id="btnReconfirm" hidden>Sí, después de todo vamos</button>
+          </div>
+          <div class="aviso" id="cancelBox" hidden>
+            <p><strong>¿Seguro que no podrán venir?</strong> Guardaremos tu respuesta como "No podremos". Tus datos se conservan por si cambias de opinión.</p>
+            <div class="opciones">
+              <button type="button" class="btn" id="cancelYes">Sí, no podremos ir</button>
+              <button type="button" class="btn ghost" id="cancelNo">Volver</button>
+            </div>
+          </div>
+          <div class="status" id="cStatus"></div>
+        </div>
+      </section>
+    </div>
+
+    <Contacto />
+  </main>
+
+  <Pie />
   </div>
-
-  <Contacto />
 
   <template id="adultTpl">
     <div class="kid">
       <div class="kid-head"><strong>Acompañante <span class="idx"></span></strong><button type="button" class="btn ghost small rm">Quitar</button></div>
-      <div class="grid">
+      <div class="grid cuatro">
         <label class="f">Nombre <span class="req">*</span><input class="a_nombre" required placeholder="Nombre" /></label>
         <label class="f">Relación contigo <span class="req">*</span>
           <select class="a_relacion" required>
@@ -153,13 +208,13 @@ import Contacto from '../components/Contacto.astro';
   <template id="kidTpl">
     <div class="kid">
       <div class="kid-head"><strong>Niño <span class="idx"></span></strong><span class="age"></span><button type="button" class="btn ghost small rm">Quitar</button></div>
-      <div class="grid">
+      <div class="grid nino">
         <label class="f">Nombre <span class="req">*</span><input class="k_nombre" required placeholder="Nombre" /></label>
         <label class="f">Fecha de nacimiento <span class="req">*</span><input class="k_fecha" type="date" required max={FECHA_COMPARTIR_ISO} /></label>
         <div class="f"><span class="lbl">Sexo <span class="req">*</span></span>
-          <div class="chips sexo"><label><input type="radio" value="Niño" />Niño</label><label><input type="radio" value="Niña" />Niña</label></div></div>
+          <div class="chips sexo segmento"><label><input type="radio" value="Niño" />Niño</label><label><input type="radio" value="Niña" />Niña</label></div></div>
         <label class="f">Personajes o intereses <span class="opt">(opcional)</span><input class="k_intereses" placeholder="Dinosaurios, princesas, fútbol..." /></label>
-        <label class="f full">Alergias o restricciones de comida <span class="opt">(opcional)</span><input class="k_alergias" placeholder="Ej. maní, lactosa" /></label>
+        <label class="f">Alergias o restricciones de comida <span class="opt">(opcional)</span><input class="k_alergias" placeholder="Ej. maní, lactosa" /></label>
       </div>
     </div>
   </template>
