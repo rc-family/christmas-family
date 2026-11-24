@@ -8,11 +8,11 @@ export const DATOS_COMPARTIR = {
   hora: 'Empezaremos desde las 06:00 p. m.',
   lugar: 'Por confirmar',
   lugarNota: 'Lo avisaremos por el grupo de WhatsApp de la familia.',
-  limite: 'Domingo 22 de noviembre',
+  limite: 'Jueves 26 de noviembre',
 };
 
-/** Cierre del registro: domingo 22 de noviembre de 2026, 23:59:59 hora de Lima (UTC-5). Misma fecha que navidad_cierre_registro() en la base. */
-export const CIERRE_REGISTRO = new Date('2026-11-23T04:59:59Z');
+/** Cierre del registro: jueves 26 de noviembre de 2026, 23:59:59 hora de Lima (UTC-5). Misma fecha que navidad_cierre_registro() en la base. */
+export const CIERRE_REGISTRO = new Date('2026-11-27T04:59:59Z');
 export const registroCerrado = (ahora: Date = new Date()) => ahora > CIERRE_REGISTRO;
 
 /** Organizadora de contacto para problemas con el código o el registro. Celular con código de país, solo dígitos. */

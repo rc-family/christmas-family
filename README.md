@@ -128,11 +128,12 @@ realtime) se hicieron desde el panel y están incluidos en `20261109033636_navid
 ## Plazo de respuesta
 
 El bloque de datos y la pantalla de confirmación indican la misma fecha límite (`DATOS_COMPARTIR.limite` en
-`src/lib/edad.ts`, hoy el domingo 22 de noviembre): vale tanto para la respuesta inicial como para los
+`src/lib/edad.ts`, hoy el jueves 26 de noviembre): vale tanto para la respuesta inicial como para los
 cambios. **El registro se cierra automáticamente** ese día a las 23:59:59 hora de Lima:
 
 - La base rechaza cualquier guardado desde `navidad_guardar_respuesta()` (función `navidad_cierre_registro()`,
-  migración `20261109184037_navidad_cierre_registro.sql`) y las políticas RLS de escritura de familias,
+  migración `20261109184037_navidad_cierre_registro.sql`; la fecha vigente la fija la última migración
+  `*_navidad_ampliar_registro.sql`) y las políticas RLS de escritura de familias,
   acompañantes y niños exigen `navidad_registro_abierto()` (migración `20261109184752_navidad_cierre_rls.sql`), así que tampoco
   se puede escribir llamando a la API directamente. Esta es la barrera real.
 - La página oculta el formulario y los botones de cambio, muestra lo registrado y pide avisar a la organizadora
