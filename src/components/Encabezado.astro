@@ -19,7 +19,7 @@ const interna = pagina !== 'inicio';
     {/* En la portada solo aparece con sesión (lo decide scripts/login.ts) */}
     <a href={ruta('/registro')} id="miRegistroLink" aria-current={pagina === 'registro' ? 'page' : undefined} hidden={pagina === 'inicio'}>Mi registro</a>
     {/* Solo organizadores: lo muestra scripts/registro.ts si el rol es admin; en el panel va siempre */}
-    {interna && <a href={ruta('/admin')} id="adminLink" data-admin aria-current={pagina === 'admin' ? 'page' : undefined} hidden={pagina !== 'admin'}>Ver respuestas</a>}
+    {interna && <a href={ruta('/admin')} id="adminLink" data-admin aria-current={pagina === 'admin' ? 'page' : undefined} hidden={pagina !== 'admin'}>Admin</a>}
   </nav>
   <Musica barra />
   {pagina === 'inicio' && (
@@ -39,7 +39,7 @@ const interna = pagina !== 'inicio';
         </div>
         {pagina === 'admin'
           ? <a href={ruta('/registro')} role="menuitem" class="usuario-item solo-angosto">Mi registro</a>
-          : <a href={ruta('/admin')} role="menuitem" class="usuario-item solo-angosto" data-admin hidden>Ver respuestas</a>}
+          : <a href={ruta('/admin')} role="menuitem" class="usuario-item solo-angosto" data-admin hidden>Admin</a>}
         <button type="button" role="menuitem" class="usuario-item salir" id="logoutBtn">Salir</button>
       </div>
     </div>

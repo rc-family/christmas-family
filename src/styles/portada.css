@@ -449,3 +449,18 @@ button.usuario[aria-expanded="true"]{box-shadow:0 0 0 3px color-mix(in srgb,var(
 .portada .admin-main>.loading,.portada .admin-main>.status{margin-bottom:16px}
 /* La barra del embudo comparte nombre de clase con la barra superior: se anulan sus estilos */
 .portada .embudo .barra{display:block;max-width:none;margin:0;padding:0;border:0;gap:0;height:8px;border-radius:4px;background:var(--suave);position:static;z-index:auto}
+/* Pestaña Asistentes: filtros por campo y tabla ordenable */
+.filtros.asist{align-items:flex-end;gap:10px 12px}
+.filtros.asist label{display:flex;flex-direction:column;gap:3px;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--muted);margin:0}
+.filtros.asist select{min-height:0;padding:8px 10px;font-size:.88rem;text-transform:none;letter-spacing:0;font-weight:500;max-width:220px}
+.filtros.asist label.marca-filtro{flex-direction:row;align-items:center;gap:6px;font-size:.85rem;letter-spacing:0;text-transform:none;font-weight:600;color:var(--ink);padding-bottom:9px;cursor:pointer}
+.filtros.asist label.marca-filtro input{width:auto;margin:0}
+.filtros.asist .cnt{flex-basis:100%;margin-left:0;font-weight:600}
+.tabla-asistentes th button{appearance:none;background:none;border:0;padding:0;font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+.tabla-asistentes th button:hover{color:var(--ink)}
+.tabla-asistentes th button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.tabla-asistentes th[aria-sort] button{color:var(--accent)}
+.tabla-asistentes th[aria-sort="ascending"] button::after{content:"▲";font-size:.6em}
+.tabla-asistentes th[aria-sort="descending"] button::after{content:"▼";font-size:.6em}
+.tabla-asistentes tr.no td{color:var(--muted)}
+.tabla-asistentes td{white-space:normal}

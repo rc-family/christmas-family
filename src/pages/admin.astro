@@ -29,6 +29,7 @@ import '../styles/portada.css';
     <nav class="tabs" role="tablist" aria-label="Secciones del panel">
       <button type="button" role="tab" id="tabRespuestas" aria-selected="true" aria-controls="vistaRespuestas" data-vista="respuestas">Respuestas</button>
       <button type="button" role="tab" id="tabUso" aria-selected="false" aria-controls="vistaUso" data-vista="uso">Uso del sitio</button>
+      <button type="button" role="tab" id="tabAsistentes" aria-selected="false" aria-controls="vistaAsistentes" data-vista="asistentes">Asistentes</button>
     </nav>
 
     <div id="vistaRespuestas" role="tabpanel" aria-labelledby="tabRespuestas">
@@ -87,7 +88,7 @@ import '../styles/portada.css';
 
     <div class="actions bloque">
       <button type="button" class="btn ghost" id="xlsxBtn">Exportar a Excel</button>
-      <p class="hint">Un archivo .xlsx con hojas de Resumen, Familias, Acompañantes, Niños y Uso.</p>
+      <p class="hint">Un archivo .xlsx con hojas de Resumen, Familias, Asistentes, Acompañantes, Niños y Uso.</p>
     </div>
     </div>
 
@@ -133,6 +134,67 @@ import '../styles/portada.css';
         <tbody id="rowsEventos"></tbody>
       </table></div>
       <div class="status err" id="usoError" hidden></div>
+    </section>
+    </div>
+
+    <div id="vistaAsistentes" role="tabpanel" aria-labelledby="tabAsistentes" hidden>
+    <section class="bloque">
+      <h2>Asistentes</h2>
+      <p class="hint">Un renglón por persona registrada: responsables, acompañantes y niños. Edades al 5 de diciembre. Combina los filtros para acotar la lista.</p>
+      <div class="filtros asist">
+        <input type="search" id="aTexto" placeholder="Buscar por nombre, celular, familia..." aria-label="Buscar asistente" />
+        <label>Tipo
+          <select id="aTipo">
+            <option value="">Todos</option>
+            <option value="adulto">Adultos</option>
+            <option value="Responsable">Responsables</option>
+            <option value="Acompañante">Acompañantes</option>
+            <option value="nino">Niños y niñas</option>
+            <option value="Niño">Solo niños</option>
+            <option value="Niña">Solo niñas</option>
+          </select>
+        </label>
+        <label>Asistencia
+          <select id="aAsiste">
+            <option value="">Todas</option>
+            <option value="vienen">Sí y por confirmar</option>
+            <option value="Sí">Sí, vamos</option>
+            <option value="Por confirmar">Por confirmar</option>
+            <option value="No">No podrán</option>
+          </select>
+        </label>
+        <label>Edad
+          <select id="aEdad">
+            <option value="">Todas</option>
+            <option value="0-1">0-1 años</option>
+            <option value="1-3">1-3 años</option>
+            <option value="4-6">4-6 años</option>
+            <option value="7-9">7-9 años</option>
+            <option value="10+">10+ años</option>
+          </select>
+        </label>
+        <label>Familia
+          <select id="aFamilia"><option value="">Todas</option></select>
+        </label>
+        <label class="marca-filtro"><input type="checkbox" id="aRestriccion" />Con restricción o alergia</label>
+        <label class="marca-filtro"><input type="checkbox" id="aCelular" />Con celular</label>
+        <button type="button" class="btn ghost small" id="aLimpiar">Limpiar filtros</button>
+        <span class="cnt" id="aCuenta" aria-live="polite"></span>
+      </div>
+      <div class="tbl-wrap"><table class="tabla-asistentes">
+        <thead><tr>
+          <th><button type="button" data-orden="nombre">Nombre</button></th>
+          <th><button type="button" data-orden="tipo">Tipo</button></th>
+          <th><button type="button" data-orden="edad">Edad</button></th>
+          <th><button type="button" data-orden="relacion">Relación</button></th>
+          <th>Celular</th>
+          <th>Restricción o alergia</th>
+          <th>Intereses</th>
+          <th><button type="button" data-orden="familia">Familia</button></th>
+          <th><button type="button" data-orden="asiste">Asiste</button></th>
+        </tr></thead>
+        <tbody id="rowsAsistentes"></tbody>
+      </table></div>
     </section>
     </div>
   </div>

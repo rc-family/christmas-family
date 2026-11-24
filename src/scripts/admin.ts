@@ -40,7 +40,97 @@ function llenarDl(dl: HTMLElement, filas: [string, number | string, boolean?][])
 }
 
 /** Datos de la última carga, listos para exportar a Excel. */
-const hojas = { resumen: [] as Fila[], familias: [] as Fila[], acompanantes: [] as Fila[], ninos: [] as Fila[], uso: [] as Fila[] };
+const hojas = { resumen: [] as Fila[], familias: [] as Fila[], asistentes: [] as Fila[], acompanantes: [] as Fila[], ninos: [] as Fila[], uso: [] as Fila[] };
+
+/* ---------- Asistentes: una fila por persona, con filtros por campo ---------- */
+interface Asistente {
+  nombre: string; tipo: 'Responsable' | 'Acompañante' | 'Niño' | 'Niña'; edad: string; anios: number | null; rango: string;
+  relacion: string; celular: string; restriccion: string; intereses: string; familia: string; familiaId: string; asiste: string;
+}
+let asistentes: Asistente[] = [];
+let ordenAsist: { campo: keyof Asistente; asc: boolean } = { campo: 'familia', asc: true };
+const sinTildes = (t: string) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const ORDEN_TIPO = ['Responsable', 'Acompañante', 'Niño', 'Niña'];
+/** Respuestas que equivalen a "no tengo restricción": no cuentan para el filtro. */
+const SIN_RESTRICCION = new Set(['', 'ninguna', 'ninguno', 'ningun', 'no', 'no tiene', 'nada', 'sin restricciones', 'sin restriccion', 'n/a', 'na', '-']);
+const tieneRestriccion = (t: string) => !SIN_RESTRICCION.has(sinTildes(t).trim().replace(/[.!\s]+$/, ''));
+
+function renderAsistentes() {
+  const texto = sinTildes($<HTMLInputElement>('aTexto').value.trim());
+  const tipo = $<HTMLSelectElement>('aTipo').value, asiste = $<HTMLSelectElement>('aAsiste').value;
+  const edad = $<HTMLSelectElement>('aEdad').value, familia = $<HTMLSelectElement>('aFamilia').value;
+  const conRestriccion = $<HTMLInputElement>('aRestriccion').checked, conCelular = $<HTMLInputElement>('aCelular').checked;
+  const esNino = (a: Asistente) => a.tipo === 'Niño' || a.tipo === 'Niña';
+  const lista = asistentes.filter((a) =>
+    (!tipo || (tipo === 'adulto' ? !esNino(a) : tipo === 'nino' ? esNino(a) : a.tipo === tipo))
+    && (!asiste || (asiste === 'vienen' ? a.asiste !== 'No' : a.asiste === asiste))
+    && (!edad || a.rango === edad)
+    && (!familia || a.familiaId === familia)
+    && (!conRestriccion || tieneRestriccion(a.restriccion))
+    && (!conCelular || !!a.celular)
+    && (!texto || sinTildes([a.nombre, a.relacion, a.celular, a.restriccion, a.intereses, a.familia].join(' ')).includes(texto)));
+  const { campo, asc } = ordenAsist;
+  const clave = (a: Asistente): string | number =>
+    campo === 'edad' ? (a.anios ?? 999) : campo === 'tipo' ? ORDEN_TIPO.indexOf(a.tipo) : sinTildes(String(a[campo] ?? ''));
+  // Orden estable: dentro de cada familia se conserva responsable → acompañantes → niños
+  lista.sort((a, b) => { const x = clave(a), y = clave(b); return (x < y ? -1 : x > y ? 1 : 0) * (asc ? 1 : -1); });
+
+  const rows = $('rowsAsistentes'); rows.innerHTML = '';
+  for (const a of lista) {
+    const fila = tr([
+      td(a.nombre), td(a.tipo), td(a.edad, 'num'), td(a.relacion), td(a.celular, 'num'),
+      td(a.restriccion), td(a.intereses), td(a.familia), td(a.asiste),
+    ]);
+    if (a.asiste === 'No') fila.classList.add('no');
+    rows.appendChild(fila);
+  }
+  if (!lista.length) { const c = td(asistentes.length ? 'Nadie coincide con estos filtros.' : 'Aún no hay registros.'); c.colSpan = 9; rows.appendChild(tr([c])); }
+  const ad = lista.filter((a) => !esNino(a)).length, ni = lista.length - ad;
+  $('aCuenta').textContent = `${lista.length} de ${asistentes.length} personas · ${ad} ${ad === 1 ? 'adulto' : 'adultos'} y ${ni} ${ni === 1 ? 'niño' : 'niños'}`;
+  document.querySelectorAll<HTMLButtonElement>('.tabla-asistentes [data-orden]').forEach((b) => {
+    const th = b.closest('th')!;
+    if (b.dataset.orden === campo) th.setAttribute('aria-sort', asc ? 'ascending' : 'descending'); else th.removeAttribute('aria-sort');
+  });
+}
+
+/** Reconstruye la lista de personas y el desplegable de familias tras cada carga, conservando los filtros. */
+function prepararAsistentes(fams: Familia[]) {
+  asistentes = [];
+  hojas.asistentes = [['Nombre', 'Tipo', 'Edad al 5/12', 'Relación', 'Celular', 'Restricción o alergia', 'Intereses', 'Familia', 'Asiste']];
+  for (const f of fams) {
+    const base = { familia: f.nombre, familiaId: f.id, asiste: f.asiste };
+    asistentes.push({ ...base, nombre: f.nombre, tipo: 'Responsable', edad: '', anios: null, rango: '', relacion: f.parentesco, celular: f.celular, restriccion: '', intereses: '' });
+    for (const a of [...f.navidad_acompanantes].sort((x, y) => x.orden - y.orden)) {
+      asistentes.push({ ...base, nombre: a.nombre, tipo: 'Acompañante', edad: '', anios: null, rango: '', relacion: a.relacion, celular: a.celular ?? '', restriccion: a.restricciones ?? '', intereses: '' });
+    }
+    for (const n of [...f.navidad_ninos].sort((x, y) => x.orden - y.orden)) {
+      asistentes.push({
+        ...base, nombre: n.nombre, tipo: n.sexo === 'Niña' ? 'Niña' : 'Niño', edad: edadAlCompartir(n.fecha_nacimiento), anios: aniosAlCompartir(n.fecha_nacimiento),
+        rango: rangoEdad(n.fecha_nacimiento), relacion: 'Hijo/a o menor a cargo', celular: '', restriccion: n.alergias ?? '', intereses: n.intereses ?? '',
+      });
+    }
+  }
+  for (const a of asistentes) hojas.asistentes.push([a.nombre, a.tipo, a.edad, a.relacion, a.celular, a.restriccion, a.intereses, a.familia, a.asiste]);
+  const sel = $<HTMLSelectElement>('aFamilia'), previa = sel.value;
+  sel.innerHTML = '';
+  sel.appendChild(new Option('Todas', ''));
+  [...fams].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')).forEach((f) => sel.appendChild(new Option(f.nombre, f.id)));
+  sel.value = fams.some((f) => f.id === previa) ? previa : '';
+  renderAsistentes();
+}
+
+['aTexto', 'aTipo', 'aAsiste', 'aEdad', 'aFamilia', 'aRestriccion', 'aCelular'].forEach((id) => $(id).addEventListener('input', renderAsistentes));
+$('aLimpiar').addEventListener('click', () => {
+  $<HTMLInputElement>('aTexto').value = '';
+  ['aTipo', 'aAsiste', 'aEdad', 'aFamilia'].forEach((id) => { $<HTMLSelectElement>(id).value = ''; });
+  $<HTMLInputElement>('aRestriccion').checked = false; $<HTMLInputElement>('aCelular').checked = false;
+  renderAsistentes();
+});
+document.querySelectorAll<HTMLButtonElement>('.tabla-asistentes [data-orden]').forEach((b) => b.addEventListener('click', () => {
+  const campo = b.dataset.orden as keyof Asistente;
+  ordenAsist = { campo, asc: ordenAsist.campo === campo ? !ordenAsist.asc : true };
+  renderAsistentes();
+}));
 
 function render(fams: Familia[]) {
   const cont = $('familias'), rowsN = $('rowsNinos');
@@ -236,6 +326,7 @@ async function cargar() {
     .order('updated_at', { ascending: false });
   if (error) throw error;
   render((data ?? []) as Familia[]);
+  prepararAsistentes((data ?? []) as Familia[]);
   void emitirTotales('admin');
 }
 
@@ -244,17 +335,20 @@ function anchos(filas: Fila[]) {
   return (filas[0] ?? []).map((_, c) => ({ wch: Math.min(50, Math.max(10, ...filas.map((r) => String(r[c] ?? '').length + 2))) }));
 }
 
-/* ---------- Pestañas (Respuestas / Uso del sitio), con #uso en la URL ---------- */
-const VISTAS = ['respuestas', 'uso'] as const;
+/* ---------- Pestañas (Respuestas / Uso del sitio / Asistentes), con #uso o #asistentes en la URL ---------- */
+const VISTAS = ['respuestas', 'uso', 'asistentes'] as const;
 type Vista = typeof VISTAS[number];
 function mostrarVista(v: Vista) {
   $('vistaRespuestas').hidden = v !== 'respuestas';
   $('vistaUso').hidden = v !== 'uso';
+  $('vistaAsistentes').hidden = v !== 'asistentes';
   document.querySelectorAll<HTMLButtonElement>('.tabs [data-vista]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.vista === v)));
-  if (location.hash !== (v === 'uso' ? '#uso' : '')) history.replaceState(null, '', v === 'uso' ? '#uso' : location.pathname);
+  const hash = v === 'respuestas' ? '' : '#' + v;
+  if (location.hash !== hash) history.replaceState(null, '', hash || location.pathname);
 }
+const vistaDeHash = (): Vista => (location.hash === '#uso' ? 'uso' : location.hash === '#asistentes' ? 'asistentes' : 'respuestas');
 document.querySelectorAll<HTMLButtonElement>('.tabs [data-vista]').forEach((b) => b.addEventListener('click', () => mostrarVista(b.dataset.vista as Vista)));
-window.addEventListener('hashchange', () => mostrarVista(location.hash === '#uso' ? 'uso' : 'respuestas'));
+window.addEventListener('hashchange', () => mostrarVista(vistaDeHash()));
 
 $('xlsxBtn').addEventListener('click', () => {
   const wb = XLSX.utils.book_new();
@@ -265,6 +359,7 @@ $('xlsxBtn').addEventListener('click', () => {
   };
   agregar('Resumen', hojas.resumen);
   agregar('Familias', hojas.familias);
+  agregar('Asistentes', hojas.asistentes);
   agregar('Acompañantes', hojas.acompanantes);
   agregar('Niños', hojas.ninos);
   agregar('Uso', hojas.uso);
@@ -296,7 +391,7 @@ $('xlsxBtn').addEventListener('click', () => {
     return;
   }
   $('panel').hidden = false;
-  mostrarVista(location.hash === '#uso' ? 'uso' : 'respuestas');
+  mostrarVista(vistaDeHash());
   usuarioEventos(user.id);
   registrarVisita();
   registrar('admin_abrio');

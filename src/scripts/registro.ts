@@ -388,7 +388,7 @@ async function cargar(userId: string): Promise<Respuesta | null> {
   usuarioEventos(user.id);
   registrarVisita();
   $('userEmail').textContent = user.email;
-  // "Ver respuestas" en el menú (escritorio) y en el menú de la cuenta (móvil)
+  // "Admin" en el menú (escritorio) y en el menú de la cuenta (móvil)
   isAdmin().then((ok) => { if (ok) document.querySelectorAll<HTMLElement>('[data-admin]').forEach((el) => { el.hidden = false; }); });
 
   /** Valida, guarda y pasa a la confirmación. Devuelve false si falló. */
