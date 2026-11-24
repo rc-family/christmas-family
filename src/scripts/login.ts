@@ -20,7 +20,15 @@ registrarVisita();
   mostrarUsuario();
   clerk.addListener(mostrarUsuario);
 
-  if (clerk.session) { location.replace(destino); return; }
+  if (clerk.session) {
+    // Quien llega rebotado desde una página protegida (?next=) sigue a su destino; quien abre Inicio
+    // con la sesión ya iniciada se queda para poder mirarlo, con un acceso directo a su registro.
+    if (next) { location.replace(destino); return; }
+    $('sesionCorreo').textContent = clerk.user?.primaryEmailAddress?.emailAddress ?? 'tu cuenta';
+    $('loginPaso').textContent = 'Sesión iniciada';
+    $('yaIngreso').hidden = false;
+    return;
+  }
 
   $('signin').hidden = false;
   registrar('vio_login');

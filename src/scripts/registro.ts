@@ -88,10 +88,12 @@ $('addKid').addEventListener('click', () => enfocar(addKid(), '.k_nombre'));
 $('addAdult').addEventListener('click', () => enfocar(addAdult(), '.a_nombre'));
 $('logoutBtn').addEventListener('click', signOut);
 
+/** Ayuda y comentarios ya no se piden en el formulario; se conserva lo que la familia había guardado. */
+let extras: Pick<Respuesta, 'ayuda' | 'comentarios'> = { ayuda: [], comentarios: '' };
+
 function readForm(): Respuesta {
   const v = (id: string) => $<HTMLInputElement>(id).value.trim();
   const asiste = (document.querySelector<HTMLInputElement>('input[name="p_asiste"]:checked'))?.value ?? '';
-  const ayuda = [...document.querySelectorAll<HTMLInputElement>('input[name="ayuda"]:checked')].map((c) => c.value);
   const ninos: Nino[] = [...kids.children].map((k) => ({
     nombre: q<HTMLInputElement>(k, '.k_nombre').value.trim(),
     fecha: q<HTMLInputElement>(k, '.k_fecha').value,
@@ -106,7 +108,7 @@ function readForm(): Respuesta {
     celular: q<HTMLInputElement>(a, '.a_celular').value.trim(),
     restricciones: q<HTMLInputElement>(a, '.a_restricciones').value.trim(),
   }));
-  return { nombre: v('p_nombre'), parentesco: v('p_parentesco'), celular: v('p_celular'), asiste, ayuda, comentarios: v('p_comentarios'), acompanantes, ninos };
+  return { nombre: v('p_nombre'), parentesco: v('p_parentesco'), celular: v('p_celular'), asiste, ayuda: extras.ayuda, comentarios: extras.comentarios, acompanantes, ninos };
 }
 
 /** Rellena el formulario con una respuesta (la guardada o una nueva). */
@@ -114,9 +116,8 @@ function poblar(d: Respuesta) {
   $<HTMLInputElement>('p_nombre').value = d.nombre;
   $<HTMLInputElement>('p_parentesco').value = d.parentesco;
   $<HTMLInputElement>('p_celular').value = d.celular;
-  $<HTMLTextAreaElement>('p_comentarios').value = d.comentarios;
+  extras = { ayuda: d.ayuda, comentarios: d.comentarios };
   document.querySelectorAll<HTMLInputElement>('input[name="p_asiste"]').forEach((r) => { r.checked = r.value === d.asiste; });
-  document.querySelectorAll<HTMLInputElement>('input[name="ayuda"]').forEach((c) => { c.checked = d.ayuda.includes(c.value); });
   adults.innerHTML = ''; kids.innerHTML = '';
   d.acompanantes.forEach((a) => addAdult(a));
   d.ninos.forEach((n) => addKid({ nombre: n.nombre, fecha_nacimiento: n.fecha, sexo: n.sexo, intereses: n.intereses, alergias: n.alergias }));

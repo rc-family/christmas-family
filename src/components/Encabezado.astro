@@ -1,10 +1,12 @@
 ---
-/** Encabezado de la portada y del registro: marca, menú, reproductor y la ventana de detalles. */
+/** Encabezado de la portada, del registro y del panel de organización: marca, menú, reproductor y la ventana de detalles. */
 import Musica from './Musica.astro';
 import TarjetasDatos from './TarjetasDatos.astro';
 import { ruta } from '../lib/rutas';
-interface Props { pagina: 'inicio' | 'registro' }
+interface Props { pagina: 'inicio' | 'registro' | 'admin' }
 const { pagina } = Astro.props;
+/** Páginas con sesión obligatoria: llevan el menú de la cuenta y el acceso al panel. */
+const interna = pagina !== 'inicio';
 ---
 <header class="barra">
   <a class="marca" href={ruta('/')}>
@@ -16,8 +18,8 @@ const { pagina } = Astro.props;
     <a href={pagina === 'inicio' ? '#detalles' : ruta('/#detalles')} id="detallesBtn" aria-haspopup="dialog" aria-controls="detallesModal">Detalles</a>
     {/* En la portada solo aparece con sesión (lo decide scripts/login.ts) */}
     <a href={ruta('/registro')} id="miRegistroLink" aria-current={pagina === 'registro' ? 'page' : undefined} hidden={pagina === 'inicio'}>Mi registro</a>
-    {/* Solo organizadores: lo muestra scripts/registro.ts si el rol es admin */}
-    {pagina === 'registro' && <a href={ruta('/admin')} id="adminLink" data-admin hidden>Ver respuestas</a>}
+    {/* Solo organizadores: lo muestra scripts/registro.ts si el rol es admin; en el panel va siempre */}
+    {interna && <a href={ruta('/admin')} id="adminLink" data-admin aria-current={pagina === 'admin' ? 'page' : undefined} hidden={pagina !== 'admin'}>Ver respuestas</a>}
   </nav>
   <Musica barra />
   {pagina === 'inicio' && (
@@ -25,7 +27,7 @@ const { pagina } = Astro.props;
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 19.5c1.2-3.3 3.8-5 7-5s5.8 1.7 7 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
     </a>
   )}
-  {pagina === 'registro' && (
+  {interna && (
     <div class="usuario-menu">
       <button type="button" class="usuario" id="usuarioMenuBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="usuarioMenu" aria-label="Menú de tu cuenta">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 19.5c1.2-3.3 3.8-5 7-5s5.8 1.7 7 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -35,7 +37,9 @@ const { pagina } = Astro.props;
           <small>Sesión iniciada</small>
           <strong id="userEmail">...</strong>
         </div>
-        <a href={ruta('/admin')} role="menuitem" class="usuario-item solo-angosto" data-admin hidden>Ver respuestas</a>
+        {pagina === 'admin'
+          ? <a href={ruta('/registro')} role="menuitem" class="usuario-item solo-angosto">Mi registro</a>
+          : <a href={ruta('/admin')} role="menuitem" class="usuario-item solo-angosto" data-admin hidden>Ver respuestas</a>}
         <button type="button" role="menuitem" class="usuario-item salir" id="logoutBtn">Salir</button>
       </div>
     </div>

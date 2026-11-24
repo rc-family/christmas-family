@@ -436,3 +436,16 @@ button.usuario[aria-expanded="true"]{box-shadow:0 0 0 3px color-mix(in srgb,var(
   .portada .confirmacion .opciones{display:grid;grid-template-columns:1fr 1fr}
   .portada .confirmacion .opciones .btn.ghost.danger{margin-left:0;grid-column:1/-1}
 }
+
+/* =================== Panel de organización (/admin) =================== */
+/* Misma hoja, barra y bloques que el registro; a todo el ancho de la hoja por las tablas. */
+.registro-main.admin-main{max-width:none}
+.portada .admin-main .tabs{margin:0 0 16px}
+.portada .admin-main .bloque>h2,.portada .admin-main .bloque summary{font-family:var(--font-display);font-weight:600;font-size:1.3rem;line-height:1.15;color:var(--ink)}
+.portada .admin-main .bloque>h2{margin:0 0 4px}
+.portada .admin-main .stat,.portada .admin-main .fam{background:var(--crema);border:1px solid var(--line)}
+.portada .admin-main .actions{margin-top:0;align-items:flex-start}
+.portada .admin-main .actions .hint{margin:0}
+.portada .admin-main>.loading,.portada .admin-main>.status{margin-bottom:16px}
+/* La barra del embudo comparte nombre de clase con la barra superior: se anulan sus estilos */
+.portada .embudo .barra{display:block;max-width:none;margin:0;padding:0;border:0;gap:0;height:8px;border-radius:4px;background:var(--suave);position:static;z-index:auto}

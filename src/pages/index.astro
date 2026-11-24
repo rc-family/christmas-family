@@ -68,6 +68,11 @@ const wa = CONTACTO.celular
           <div class="status err" id="noKey" hidden>
             Falta configurar la autenticación: agrega <code>PUBLIC_CLERK_PUBLISHABLE_KEY</code> al archivo <code>.env</code> y reinicia el servidor.
           </div>
+          <section id="yaIngreso" hidden>
+            <h2>Ya ingresaste</h2>
+            <p class="hint">Estás dentro como <strong id="sesionCorreo"></strong>. Puedes mirar los detalles con calma y volver a tu registro cuando quieras.</p>
+            <a class="btn" href={ruta('/registro')}>Ir a mi registro</a>
+          </section>
           <section id="signin" hidden>
             <h2 id="loginTitulo">Ingresa con tu correo</h2>
             <p class="hint" id="loginHint">Te enviamos un código de 6 dígitos a tu correo, sin contraseñas. Si es tu primera vez, la cuenta se crea sola.</p>
