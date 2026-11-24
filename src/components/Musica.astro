@@ -1,0 +1,39 @@
+---
+/**
+ * Reproductor de villancicos. Dos presentaciones con el mismo marcado (ids que usa scripts/musica.ts):
+ * - flotante (por defecto): botón redondo con ondas, para la barra superior de las hojas.
+ * - barra: píldora/tarjeta con el título de la pista y un botón rápido de reproducir/pausar (portada).
+ */
+interface Props { barra?: boolean }
+const { barra = false } = Astro.props;
+---
+<div class:list={['musica', { 'en-barra': barra }]}>
+  <button type="button" class="musica-btn" id="musicaBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="musicaPanel" aria-label="Abrir reproductor de música">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V6l10-2v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.5" cy="18" r="2.5" fill="currentColor"/><circle cx="16.5" cy="16" r="2.5" fill="currentColor"/></svg>
+    {barra
+      ? <span class="m-lbl"><small>Música de fondo</small><strong id="mTituloBtn">—</strong></span>
+      : <span class="ondas" aria-hidden="true"><i></i><i></i><i></i></span>}
+  </button>
+  {barra && (
+    <button type="button" class="m-play2" id="mPlay2" aria-label="Reproducir">
+      <span class="m-ico" aria-hidden="true">▶</span><span class="m-txt2">Reproducir</span>
+    </button>
+  )}
+  <div class="musica-panel" id="musicaPanel" role="dialog" aria-label="Reproductor de villancicos" hidden>
+    <div class="m-ahora">
+      <span class="m-eyebrow">Sonando</span>
+      <strong id="mTitulo">—</strong>
+      <small id="mInterprete"></small>
+    </div>
+    <div class="m-controles">
+      <button type="button" id="mPrev" aria-label="Anterior">⏮</button>
+      <button type="button" id="mPlay" class="m-play" aria-label="Reproducir">▶</button>
+      <button type="button" id="mNext" aria-label="Siguiente">⏭</button>
+      <button type="button" id="mMute" aria-label="Silenciar" aria-pressed="false">🔊</button>
+      <input type="range" id="mVol" min="0" max="100" step="1" value="25" aria-label="Volumen" />
+    </div>
+    <p class="m-aviso" id="mAviso" hidden>Toca en cualquier parte para que empiece la música.</p>
+    <ol class="m-lista" id="mLista"></ol>
+  </div>
+  <audio id="musicaAudio" preload="none"></audio>
+</div>

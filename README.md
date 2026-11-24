@@ -58,7 +58,7 @@ Un organizador es un usuario de Clerk con `{"role": "admin"}` en su **public met
 ```
 
 El cambio llega al token en menos de un minuto (o al cerrar y volver a abrir sesión). Con ese rol la app muestra el
-enlace *Ver respuestas* y Supabase permite leer todas las familias; sin él, cada persona ve solo su registro.
+enlace *Admin* y Supabase permite leer todas las familias; sin él, cada persona ve solo su registro.
 
 ### 2. Conectar Clerk con Supabase
 
