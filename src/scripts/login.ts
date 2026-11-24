@@ -1,5 +1,6 @@
 import { ruta } from '../lib/rutas';
 import { loadClerk, aparienciaClerk, aparienciaPortada } from '../lib/clerk';
+import { signOut } from '../lib/supabase';
 import { registrar, registrarVisita } from '../lib/eventos';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -14,9 +15,14 @@ registrarVisita();
   $('checking').hidden = true;
   if (!clerk) { $('noKey').hidden = false; return; }
 
-  // Los accesos a "Mi registro" (enlace del menú e icono de usuario) solo aparecen con sesión iniciada.
+  // El enlace "Mi registro" y el menú de la cuenta (correo y "Salir") solo aparecen con sesión iniciada.
   const accesos = ['usuarioBtn', 'miRegistroLink'].map((id) => document.getElementById(id));
-  const mostrarUsuario = () => accesos.forEach((el) => { if (el) el.hidden = !clerk.session; });
+  const mostrarUsuario = () => {
+    accesos.forEach((el) => { if (el) el.hidden = !clerk.session; });
+    const correo = clerk.user?.primaryEmailAddress?.emailAddress;
+    if (correo) $('userEmail').textContent = correo;
+  };
+  $('logoutBtn').addEventListener('click', signOut);
   mostrarUsuario();
   clerk.addListener(mostrarUsuario);
 

@@ -22,13 +22,8 @@ const interna = pagina !== 'inicio';
     {interna && <a href={ruta('/admin')} id="adminLink" data-admin aria-current={pagina === 'admin' ? 'page' : undefined} hidden={pagina !== 'admin'}>Admin</a>}
   </nav>
   <Musica barra />
-  {pagina === 'inicio' && (
-    <a class="usuario" id="usuarioBtn" href={ruta('/registro')} aria-label="Mi registro" title="Mi registro" hidden>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 19.5c1.2-3.3 3.8-5 7-5s5.8 1.7 7 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-    </a>
-  )}
-  {interna && (
-    <div class="usuario-menu">
+  {/* Menú de la cuenta en todas las páginas; en la portada solo aparece con sesión (scripts/login.ts) */}
+  <div class="usuario-menu" id={pagina === 'inicio' ? 'usuarioBtn' : undefined} hidden={pagina === 'inicio'}>
       <button type="button" class="usuario" id="usuarioMenuBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="usuarioMenu" aria-label="Menú de tu cuenta">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 19.5c1.2-3.3 3.8-5 7-5s5.8 1.7 7 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
       </button>
@@ -37,13 +32,11 @@ const interna = pagina !== 'inicio';
           <small>Sesión iniciada</small>
           <strong id="userEmail">...</strong>
         </div>
-        {pagina === 'admin'
-          ? <a href={ruta('/registro')} role="menuitem" class="usuario-item solo-angosto">Mi registro</a>
-          : <a href={ruta('/admin')} role="menuitem" class="usuario-item solo-angosto" data-admin hidden>Admin</a>}
+        {pagina !== 'registro' && <a href={ruta('/registro')} role="menuitem" class="usuario-item solo-angosto">Mi registro</a>}
+        {pagina === 'registro' && <a href={ruta('/admin')} role="menuitem" class="usuario-item solo-angosto" data-admin hidden>Admin</a>}
         <button type="button" role="menuitem" class="usuario-item salir" id="logoutBtn">Salir</button>
       </div>
     </div>
-  )}
 </header>
 
 <dialog class="modal-detalles" id="detallesModal" aria-labelledby="detallesModalTitulo">

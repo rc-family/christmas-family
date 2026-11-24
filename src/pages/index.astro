@@ -40,7 +40,7 @@ const wa = CONTACTO.celular
       <figure class="foto" id="slider" aria-roledescription="carrusel" aria-label="Fotos del compartir">
         {FOTOS.map((f, i) => (
           <div class:list={['slide', { activa: i === 0 }]} role="group" aria-roledescription="diapositiva" aria-label={`Foto ${i + 1} de ${FOTOS.length}`} aria-hidden={i !== 0}>
-            <img src={urlFoto(f)} alt={f.alt} width="1600" height="1200" loading={i === 0 ? 'eager' : 'lazy'} decoding="async" fetchpriority={i === 0 ? 'high' : undefined} />
+            <img src={urlFoto(f)} alt={f.alt} width="1600" height="1200" style={f.foco ? `object-position:${f.foco}` : undefined} loading={i === 0 ? 'eager' : 'lazy'} decoding="async" fetchpriority={i === 0 ? 'high' : undefined} />
             <figcaption>
               <span class="cap-desk"><strong>{f.titulo}</strong><small>{f.nota}</small></span>
               <span class="cap-mov">«La Navidad no es un momento, es la alegría de estar juntos.»</span>
