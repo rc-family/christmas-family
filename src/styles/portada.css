@@ -264,12 +264,15 @@ body.portada.noche{
 .reg-eyebrow{display:block;font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--gold);margin-bottom:4px}
 .portada .reg-intro h1{font-size:clamp(1.9rem,3.4vw,2.4rem);margin:0}
 .portada .reg-intro .lead{font-size:.93rem;line-height:1.5;max-width:58ch}
-.reg-fechas{flex:none;list-style:none;margin:0;padding:0;display:flex;gap:8px}
+.reg-fechas{flex:none;list-style:none;margin:0;padding:0;display:grid;grid-template-columns:auto auto;gap:8px}
 .reg-fechas li{background:var(--blanco);border-radius:12px;padding:8px 14px;border-left:3px solid var(--pino);box-shadow:0 4px 14px rgba(20,30,25,.05)}
 .reg-fechas li.plazo{border-left-color:var(--accent)}
 .reg-fechas small{display:block;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--gold)}
 .reg-fechas .plazo small{color:var(--accent)}
 .reg-fechas b{display:block;font-size:.92rem;color:var(--ink);white-space:nowrap}
+.reg-fechas li.donde{grid-column:1/-1}
+.reg-fechas li.donde b{white-space:normal;text-wrap:balance}
+.reg-fechas li[hidden]{display:none}
 
 /* Bloques numerados */
 .portada .bloque{background:var(--blanco);border-radius:18px;padding:16px 20px 20px;margin:0 0 16px;box-shadow:0 10px 30px rgba(20,30,25,.06)}

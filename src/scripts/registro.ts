@@ -1,5 +1,5 @@
 import { supabase, requireUser, isAdmin, signOut } from '../lib/supabase';
-import { edadAlCompartir, registroCerrado } from '../lib/edad';
+import { edadAlCompartir, registroCerrado, DATOS_COMPARTIR } from '../lib/edad';
 import { tarjetaFamilia } from '../lib/tarjeta';
 import { registrar, registrarVisita, usuarioEventos } from '../lib/eventos';
 import { contarGuardado, emitirTotales } from '../lib/metricas';
@@ -299,6 +299,13 @@ new MutationObserver(actualizarResumen).observe(adults, { childList: true });
 
 function primerNombre(n: string) { return n.trim().split(/\s+/)[0] || ''; }
 
+/** Quien ya registró su respuesta ve la dirección: en el encabezado y en la ventana de detalles. */
+function mostrarDonde() {
+  $('regDonde').hidden = false;
+  document.querySelectorAll<HTMLElement>('[data-donde]').forEach((el) => { el.textContent = DATOS_COMPARTIR.direccion; });
+  document.querySelectorAll<HTMLElement>('[data-donde-nota]').forEach((el) => { el.hidden = true; });
+}
+
 /** Muestra la pantalla de agradecimiento con lo registrado y las opciones para cambiarlo. */
 function mostrarConfirmacion(d: Respuesta) {
   const nombre = primerNombre(d.nombre);
@@ -314,6 +321,7 @@ function mostrarConfirmacion(d: Respuesta) {
       : 'Tu respuesta quedó guardada como "Por confirmar". Cuando lo sepan, vuelve aquí y actualízala.';
   const t = $('cTarjeta'); t.innerHTML = '';
   t.appendChild(tarjetaFamilia({ ...d, ninos: d.ninos.map((n) => ({ nombre: n.nombre, fecha: n.fecha, sexo: n.sexo, intereses: n.intereses, alergias: n.alergias })) }));
+  mostrarDonde();
   $('btnCancel').hidden = noVa;
   $('btnReconfirm').hidden = !noVa;
   $('cancelBox').hidden = true;

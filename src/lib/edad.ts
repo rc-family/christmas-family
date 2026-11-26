@@ -6,13 +6,16 @@ export const FECHA_COMPARTIR_TEXTO = 'sábado 5 de diciembre';
 export const DATOS_COMPARTIR = {
   fecha: 'Sábado 05 de diciembre',
   hora: 'Empezaremos desde las 06:00 p. m.',
+  horaCorta: '6:00pm',
   lugar: 'Por confirmar',
   lugarNota: 'Lo avisaremos por el grupo de WhatsApp de la familia.',
-  limite: 'Jueves 26 de noviembre',
+  /** Dirección del local: solo se muestra a quien ya registró su respuesta. */
+  direccion: 'Av. Horacio Urteaga Nro. 660, Jesús María, Lima',
+  limite: 'Sábado 28 de noviembre',
 };
 
-/** Cierre del registro: jueves 26 de noviembre de 2026, 23:59:59 hora de Lima (UTC-5). Misma fecha que navidad_cierre_registro() en la base. */
-export const CIERRE_REGISTRO = new Date('2026-11-27T04:59:59Z');
+/** Cierre del registro: sábado 28 de noviembre de 2026, 23:59:59 hora de Lima (UTC-5). Misma fecha que navidad_cierre_registro() en la base. */
+export const CIERRE_REGISTRO = new Date('2026-11-29T04:59:59Z');
 export const registroCerrado = (ahora: Date = new Date()) => ahora > CIERRE_REGISTRO;
 
 /** Organizadora de contacto para problemas con el código o el registro. Celular con código de país, solo dígitos. */
