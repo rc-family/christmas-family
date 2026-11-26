@@ -128,7 +128,7 @@ realtime) se hicieron desde el panel y están incluidos en `20261109033636_navid
 ## Plazo de respuesta
 
 El bloque de datos y la pantalla de confirmación indican la misma fecha límite (`DATOS_COMPARTIR.limite` en
-`src/lib/edad.ts`, hoy el jueves 26 de noviembre): vale tanto para la respuesta inicial como para los
+`src/lib/edad.ts`, hoy el sábado 28 de noviembre): vale tanto para la respuesta inicial como para los
 cambios. **El registro se cierra automáticamente** ese día a las 23:59:59 hora de Lima:
 
 - La base rechaza cualquier guardado desde `navidad_guardar_respuesta()` (función `navidad_cierre_registro()`,
