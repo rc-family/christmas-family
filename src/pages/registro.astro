@@ -18,8 +18,9 @@ import Contacto from '../components/Contacto.astro';
         <h1>Registro de participantes</h1>
       </div>
       <ul class="reg-fechas">
-        <li><small>Cuándo</small><b>{DATOS_COMPARTIR.fecha}</b></li>
+        <li><small>Cuándo</small><b>{DATOS_COMPARTIR.fecha} · {DATOS_COMPARTIR.horaCorta}</b></li>
         <li class="plazo"><small>Plazo</small><b>{DATOS_COMPARTIR.limite}</b></li>
+        <li class="donde" id="regDonde" hidden><small>Dónde</small><b>{DATOS_COMPARTIR.direccion}</b></li>
       </ul>
     </div>
 

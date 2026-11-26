@@ -6,8 +6,11 @@ export const FECHA_COMPARTIR_TEXTO = 'sábado 5 de diciembre';
 export const DATOS_COMPARTIR = {
   fecha: 'Sábado 05 de diciembre',
   hora: 'Empezaremos desde las 06:00 p. m.',
+  horaCorta: '6:00pm',
   lugar: 'Por confirmar',
   lugarNota: 'Lo avisaremos por el grupo de WhatsApp de la familia.',
+  /** Dirección del local: solo se muestra a quien ya registró su respuesta. */
+  direccion: 'Av. Horacio Urteaga Nro. 660, Jesús María, Lima',
   limite: 'Jueves 26 de noviembre',
 };
 
